@@ -16,7 +16,7 @@ const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed }) =
         left: `${position.x}%`,
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
-        transition: isGrabbed ? 'all 1s ease-in-out' : 'none',
+        transition: isGrabbed ? 'all 1.5s ease-in-out' : 'none',
         zIndex: isGrabbed ? 15 : 5
       }}
     >
@@ -36,7 +36,7 @@ const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed }) =
             <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
             <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
             
-            {/* Additional side dots for better grab zones */}
+            {/* Additional side dots for better grab zones - 40-60% success but can drop */}
             <div className="absolute top-1/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
             <div className="absolute top-1/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
             <div className="absolute top-2/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
