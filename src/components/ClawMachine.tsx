@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback } from 'react';
 import Claw from './Claw';
 import Plushie from './Plushie';
@@ -17,6 +16,7 @@ interface PlushieData {
   type: string;
   color: string;
   isGrabbed: boolean;
+  isFalling: boolean;
 }
 
 const ClawMachine: React.FC<ClawMachineProps> = ({
@@ -28,14 +28,42 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
   const machineRef = useRef<HTMLDivElement>(null);
   const [clawPosition, setClawPosition] = useState({ x: 50, y: 10 });
   const [isClawActive, setIsClawActive] = useState(false);
+  const [nextPlushieId, setNextPlushieId] = useState(6);
   const [plushies, setPlushies] = useState<PlushieData[]>([
-    { id: 1, x: 20, y: 70, type: '🧸', color: 'brown', isGrabbed: false },
-    { id: 2, x: 35, y: 75, type: '🐱', color: 'orange', isGrabbed: false },
-    { id: 3, x: 65, y: 72, type: '🐶', color: 'golden', isGrabbed: false },
-    { id: 4, x: 80, y: 68, type: '🐰', color: 'white', isGrabbed: false },
-    { id: 5, x: 50, y: 80, type: '🦊', color: 'red', isGrabbed: false },
+    { id: 1, x: 20, y: 70, type: '🧸', color: 'brown', isGrabbed: false, isFalling: false },
+    { id: 2, x: 35, y: 75, type: '🐱', color: 'orange', isGrabbed: false, isFalling: false },
+    { id: 3, x: 65, y: 72, type: '🐶', color: 'golden', isGrabbed: false, isFalling: false },
+    { id: 4, x: 80, y: 68, type: '🐰', color: 'white', isGrabbed: false, isFalling: false },
+    { id: 5, x: 50, y: 80, type: '🦊', color: 'red', isGrabbed: false, isFalling: false },
   ]);
   const [hasMovedClaw, setHasMovedClaw] = useState(false);
+
+  const plushieTypes = ['🧸', '🐱', '🐶', '🐰', '🦊', '🐼', '🐻', '🐸', '🐷', '🐵'];
+
+  const addNewPlushies = () => {
+    const availablePlushies = plushies.filter(p => !p.isGrabbed && !p.isFalling);
+    if (availablePlushies.length <= 2) {
+      const newPlushies: PlushieData[] = [];
+      for (let i = 0; i < 3; i++) {
+        const randomType = plushieTypes[Math.floor(Math.random() * plushieTypes.length)];
+        const randomX = Math.random() * 60 + 20; // Between 20-80%
+        const randomY = Math.random() * 15 + 70; // Between 70-85%
+        
+        newPlushies.push({
+          id: nextPlushieId + i,
+          x: randomX,
+          y: randomY,
+          type: randomType,
+          color: 'mixed',
+          isGrabbed: false,
+          isFalling: false
+        });
+      }
+      
+      setPlushies(prev => [...prev, ...newPlushies]);
+      setNextPlushieId(prev => prev + 3);
+    }
+  };
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (gameState !== 'playing' || isClawActive) return;
@@ -59,13 +87,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
     setIsClawActive(true);
     
-    // Step 1: Animate claw going down slowly (3 seconds)
+    // Step 1: Animate claw going down slowly (4 seconds)
     setClawPosition(prev => ({ ...prev, y: 70 }));
     
     setTimeout(() => {
       // Step 2: Check for collision with plushies
       const grabbedPlushie = plushies.find(plushie => {
-        if (plushie.isGrabbed) return false;
+        if (plushie.isGrabbed || plushie.isFalling) return false;
         
         const distance = Math.abs(plushie.x - clawPosition.x);
         return distance < 10; // Collision threshold
@@ -94,7 +122,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             )
           );
           
-          // Step 4: Move claw (with plushie) slowly back up to top (3 seconds)
+          // Step 4: Move claw (with plushie) slowly back up to top (4 seconds)
           setTimeout(() => {
             setClawPosition(prev => ({ ...prev, y: 10 }));
             setPlushies(prev => 
@@ -105,7 +133,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
               )
             );
             
-            // Step 5: Move claw (with plushie) horizontally to prize slot (3 seconds)
+            // Step 5: Move claw (with plushie) horizontally to prize slot (4 seconds)
             setTimeout(() => {
               setClawPosition(prev => ({ ...prev, x: 15 }));
               setPlushies(prev => 
@@ -120,77 +148,110 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
               const shouldDrop = distance >= 3 && Math.random() < 0.5; // 50% chance for non-center dots
               
               if (shouldDrop) {
-                // Plushie drops during horizontal movement - back to original area
+                // Plushie drops during horizontal movement with smooth animation
                 setTimeout(() => {
-                  const randomX = Math.random() * 60 + 20; // Random position in main area
                   setPlushies(prev => 
                     prev.map(p => 
                       p.id === grabbedPlushie.id 
-                        ? { ...p, y: 75, x: randomX, isGrabbed: false }
+                        ? { ...p, isGrabbed: false, isFalling: true }
                         : p
                     )
                   );
                   
-                  // Reset claw and fail (1.5 seconds)
+                  // Animate plushie falling back to bottom
+                  setTimeout(() => {
+                    const randomX = Math.random() * 60 + 20; // Random position in main area
+                    setPlushies(prev => 
+                      prev.map(p => 
+                        p.id === grabbedPlushie.id 
+                          ? { ...p, y: 75, x: randomX, isFalling: false }
+                          : p
+                      )
+                    );
+                  }, 100);
+                  
+                  // Reset claw and fail (2 seconds)
                   setTimeout(() => {
                     resetClawPosition();
                     onFailedGrab();
-                  }, 1500);
-                }, 1000);
+                  }, 2000);
+                }, 1500);
               } else {
-                // Step 6: Only drop plushie when claw is directly over prize slot (x < 20)
+                // Step 6: Drop plushie when claw is over prize slot
                 setTimeout(() => {
-                  // Double check claw is over prize area before dropping
                   if (clawPosition.x <= 20) {
+                    // Start falling animation into prize box
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, y: 85 }
+                          ? { ...p, isGrabbed: false, isFalling: true }
                           : p
                       )
                     );
                     
-                    // Step 7: Remove plushie and reset claw (successful grab) (2 seconds)
+                    // Animate falling into prize box
                     setTimeout(() => {
-                      setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
-                      resetClawPosition();
-                      onSuccessfulGrab();
-                    }, 2000);
+                      setPlushies(prev => 
+                        prev.map(p => 
+                          p.id === grabbedPlushie.id 
+                            ? { ...p, y: 85 }
+                            : p
+                        )
+                      );
+                      
+                      // Step 7: Remove plushie and reset claw (successful grab)
+                      setTimeout(() => {
+                        setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
+                        resetClawPosition();
+                        onSuccessfulGrab();
+                        addNewPlushies(); // Add new plushies if needed
+                      }, 2000);
+                    }, 100);
                   } else {
-                    // If somehow not over prize area, drop back to main area
-                    const randomX = Math.random() * 60 + 20;
+                    // If not over prize area, drop back to main area with animation
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, y: 75, x: randomX, isGrabbed: false }
+                          ? { ...p, isGrabbed: false, isFalling: true }
                           : p
                       )
                     );
                     
                     setTimeout(() => {
-                      resetClawPosition();
-                      onFailedGrab();
-                    }, 1500);
+                      const randomX = Math.random() * 60 + 20;
+                      setPlushies(prev => 
+                        prev.map(p => 
+                          p.id === grabbedPlushie.id 
+                            ? { ...p, y: 75, x: randomX, isFalling: false }
+                            : p
+                        )
+                      );
+                      
+                      setTimeout(() => {
+                        resetClawPosition();
+                        onFailedGrab();
+                      }, 2000);
+                    }, 100);
                   }
-                }, 1000);
+                }, 1500);
               }
-            }, 3000); // Slower horizontal movement (3 seconds)
-          }, 3000); // Slower vertical movement up (3 seconds)
+            }, 4000); // Slower horizontal movement (4 seconds)
+          }, 4000); // Slower vertical movement up (4 seconds)
           
           return;
         }
       }
       
-      // Failed grab or no plushie - Step 3: Move claw back up (2 seconds)
+      // Failed grab or no plushie - Step 3: Move claw back up (3 seconds)
       setTimeout(() => {
         setClawPosition(prev => ({ ...prev, y: 10 }));
         
         setTimeout(() => {
           resetClawPosition();
           onFailedGrab();
-        }, 2000); // Slower movement back up
-      }, 1000);
-    }, 3000); // Slower movement down (3 seconds)
+        }, 3000); // Slower movement back up
+      }, 1500);
+    }, 4000); // Slower movement down (4 seconds)
   }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab]);
 
   const resetClawPosition = () => {

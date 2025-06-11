@@ -6,17 +6,23 @@ interface PlushieProps {
   type: string;
   color: string;
   isGrabbed: boolean;
+  isFalling: boolean;
 }
 
-const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed }) => {
+const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed, isFalling }) => {
   return (
     <div
-      className={`absolute plushie ${isGrabbed ? '' : 'animate-bounce-slow'}`}
+      className={`absolute plushie ${
+        isFalling 
+          ? 'transition-all duration-2000 ease-in' 
+          : isGrabbed 
+            ? 'transition-all duration-4000 ease-in-out' 
+            : 'animate-bounce-slow'
+      }`}
       style={{
         left: `${position.x}%`,
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
-        transition: isGrabbed ? 'all 3s ease-in-out' : 'none',
         zIndex: isGrabbed ? 15 : 5
       }}
     >
@@ -27,7 +33,7 @@ const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed }) =
         </div>
         
         {/* Grab Points (dots) */}
-        {!isGrabbed && (
+        {!isGrabbed && !isFalling && (
           <>
             {/* Center dot - 100% success */}
             <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

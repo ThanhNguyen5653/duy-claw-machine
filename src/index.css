@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -157,4 +156,20 @@
 
 .animate-claw-grab {
   animation: claw-grab 0.5s ease-in-out;
+}
+
+.transition-all {
+  transition-property: all;
+}
+
+.duration-2000 {
+  transition-duration: 2000ms;
+}
+
+.duration-4000 {
+  transition-duration: 4000ms;
+}
+
+.ease-in {
+  transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
 }
