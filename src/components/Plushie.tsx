@@ -16,7 +16,7 @@ const Plushie: React.FC<PlushieProps> = ({ position, type, color, isGrabbed }) =
         left: `${position.x}%`,
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
-        transition: isGrabbed ? 'all 1.5s ease-in-out' : 'none',
+        transition: isGrabbed ? 'all 3s ease-in-out' : 'none',
         zIndex: isGrabbed ? 15 : 5
       }}
     >

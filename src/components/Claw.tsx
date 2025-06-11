@@ -15,8 +15,8 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
         transition: isActive 
-          ? 'top 1.5s ease-in-out, left 1.5s ease-in-out' 
-          : 'left 0.2s ease-out'
+          ? 'top 3s ease-in-out, left 3s ease-in-out' 
+          : 'left 0.5s ease-out'
       }}
     >
       {/* Claw Cable */}
@@ -40,7 +40,7 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         <div 
           className={`absolute top-4 -left-2 w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top ${
             isActive ? 'rotate-12' : 'rotate-45'
-          } transition-transform duration-500`}
+          } transition-transform duration-700`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}
         ></div>
         
@@ -48,7 +48,7 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         <div 
           className={`absolute top-4 -right-2 w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top ${
             isActive ? '-rotate-12' : '-rotate-45'
-          } transition-transform duration-500`}
+          } transition-transform duration-700`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}
         ></div>
       </div>
