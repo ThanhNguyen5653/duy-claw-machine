@@ -68,19 +68,19 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Grab Points (dots) - ALL positioned at the same level to align with claw red dot */}
+        {/* Grab Points (dots) - ALL positioned at the very top to align with claw red dot */}
         {!isGrabbed && !isFalling && !isDropping && (
           <>
-            {/* Center dot - 100% success (GREEN) - Positioned to align perfectly with claw red dot */}
-            <div className="absolute top-[-6px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
+            {/* Center dot - 100% success (GREEN) - Positioned at the very top center */}
+            <div className="absolute top-[-8px] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
             
             {/* Side dots - Variable success rate (YELLOW) - Same level as center dot */}
-            <div className="absolute top-[-6px] left-1/4 transform -translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            <div className="absolute top-[-6px] right-1/4 transform translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-[-8px] left-1/4 transform -translate-x-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-[-8px] right-1/4 transform translate-x-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
             
             {/* Outer dots - Low success rate (ORANGE) - Same level as other dots */}
-            <div className="absolute top-[-6px] left-1/6 transform -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-[-6px] right-1/6 transform translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[-8px] left-1/6 transform -translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[-8px] right-1/6 transform translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
           </>
         )}
       </div>
