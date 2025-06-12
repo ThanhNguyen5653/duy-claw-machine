@@ -17,6 +17,7 @@ interface PlushieProps {
   isFalling: boolean;
   isDropping: boolean;
   dots: DotData[];
+  showDots?: boolean; // NEW PROP TO CONTROL DOT VISIBILITY
 }
 
 const Plushie: React.FC<PlushieProps> = ({ 
@@ -27,7 +28,8 @@ const Plushie: React.FC<PlushieProps> = ({
   isGrabbed, 
   isFalling, 
   isDropping,
-  dots 
+  dots,
+  showDots = false // DEFAULT TO INVISIBLE
 }) => {
   const getAnimationClass = () => {
     if (isDropping) return 'animate-drop-to-prize';
@@ -112,8 +114,8 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Dynamic Grab Point Dots - FIXED Y POSITIONING */}
-        {!isGrabbed && !isFalling && !isDropping && dots.map((dot) => (
+        {/* Dynamic Grab Point Dots - CONTROLLED BY showDots PROP */}
+        {showDots && !isGrabbed && !isFalling && !isDropping && dots.map((dot) => (
           <div
             key={dot.id}
             className={`absolute ${getDotSize(dot.color)} ${getDotColor(dot.color)} rounded-full animate-pulse border-2 shadow-lg z-20`}

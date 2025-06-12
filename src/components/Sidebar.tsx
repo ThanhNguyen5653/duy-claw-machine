@@ -16,9 +16,10 @@ interface SidebarProps {
   side: 'left' | 'right';
   coinsLeft?: number;
   topPlushies?: PlushieData[];
+  totalValue?: number; // NEW PROP FOR OVERALL TOTAL
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [] }) => {
+const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [], totalValue = 0 }) => {
   if (side === 'left') {
     return (
       <div className="w-64 p-4 neon-border machine-frame">
@@ -123,9 +124,10 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [] }) 
           })}
         </div>
         
-        {topPlushies.length > 0 && (
+        {/* UPDATED: Show overall total instead of just top 3 */}
+        {totalValue > 0 && (
           <div className="mt-4 text-lg retro-text" style={{ color: 'hsl(var(--neon-pink))' }}>
-            Total: ${topPlushies.slice(0, 3).reduce((sum, p) => sum + p.value, 0)}
+            Overall Total: ${totalValue}
           </div>
         )}
       </div>

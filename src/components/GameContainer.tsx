@@ -42,6 +42,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [allCollectedPlushies, setAllCollectedPlushies] = useState<PlushieData[]>([]); // NEW STATE FOR ALL COLLECTED
   const timerRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
@@ -79,7 +80,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
 
   // CAPPED COIN SYSTEM - Maximum 6 coins
   const handleSuccessfulGrab = (plushie: PlushieData) => {
+    // Add to all collected plushies for overall total calculation
+    setAllCollectedPlushies(prev => [...prev, plushie]);
+    
+    // Update top 3 display
     onUpdateTopPlushies(plushie);
+    
     // Only add coin if under the cap of 6
     if (coinsLeft < 6) {
       onAddCoin(); // Refund 1 coin for successful grab (capped at 6)
@@ -98,6 +104,28 @@ const GameContainer: React.FC<GameContainerProps> = ({
       setIsTimerPaused(false);
     }
   }, [gameState, isTimerActive]);
+
+  // Calculate overall total value
+  const overallTotal = allCollectedPlushies.reduce((sum, plushie) => sum + plushie.value, 0);
+
+  // Reset collected plushies when game restarts
+  useEffect(() => {
+    if (gameState === 'gameOver') {
+      // Don't reset here, let the restart button handle it
+    }
+  }, [gameState]);
+
+  // Handle game restart - reset all collected plushies
+  const handleRestart = () => {
+    setAllCollectedPlushies([]);
+    onRestart();
+  };
+
+  // Handle game reset - reset all collected plushies
+  const handleReset = () => {
+    setAllCollectedPlushies([]);
+    onReset();
+  };
 
   if (gameState === 'gameOver') {
     return (
@@ -130,12 +158,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
             ))}
           </div>
           
+          {/* UPDATED: Show overall total instead of just top 3 */}
           <div className="text-xl md:text-2xl retro-text mb-8" style={{ color: 'hsl(var(--neon-green))' }}>
-            Total Value: ${topPlushies.slice(0, 3).reduce((sum, p) => sum + p.value, 0)}
+            Overall Total: ${overallTotal}
           </div>
           
           <button
-            onClick={onRestart}
+            onClick={handleRestart}
             className="px-6 md:px-8 py-3 md:py-4 text-xl md:text-2xl font-bold retro-text neon-border bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 transition-all duration-300"
             style={{ color: 'hsl(var(--neon-cyan))' }}
           >
@@ -173,13 +202,17 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <GameControls
           gameState={gameState}
           onPause={onPause}
-          onReset={onReset}
-          onRestart={onRestart}
+          onReset={handleReset}
+          onRestart={handleRestart}
         />
       </div>
 
-      {/* Right Sidebar - Top Plushies Display */}
-      <Sidebar side="right" topPlushies={topPlushies} />
+      {/* Right Sidebar - Top Plushies Display with Overall Total */}
+      <Sidebar 
+        side="right" 
+        topPlushies={topPlushies} 
+        totalValue={overallTotal} 
+      />
     </div>
   );
 };

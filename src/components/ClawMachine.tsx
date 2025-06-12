@@ -59,39 +59,88 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     good: string[];
   }>({ generic: [], medium: [], good: [] });
 
-  // Load available images
+  // DYNAMIC IMAGE LOADING - Automatically discover images in public folders
   useEffect(() => {
-    const loadImages = async () => {
-      const genericImages = [
-        '/generic/generic.png',
-        '/generic/generic2.png'
-      ];
+    const loadImagesFromFolder = async (folderPath: string): Promise<string[]> => {
+      const images: string[] = [];
       
-      const mediumImages = [
-        '/medium/blue.png',
-        '/medium/green.png',
-        '/medium/kirby.png',
-        '/medium/pikachu.png',
-        '/medium/purple.png',
-        '/medium/repo.png',
-        '/medium/repoBlue.png',
-        '/medium/white.png'
-      ];
+      // Common image extensions to check
+      const extensions = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
       
-      const goodImages = [
-        '/good/appa.png',
-        '/good/duck.png',
-        '/good/gaara.png'
+      // We'll try to load images by attempting to fetch them
+      // This is a workaround since we can't directly list directory contents in the browser
+      const commonNames = [
+        'generic', 'generic2', 'generic3', 'generic4', 'generic5',
+        'blue', 'green', 'kirby', 'pikachu', 'purple', 'repo', 'repoBlue', 'white',
+        'red', 'yellow', 'orange', 'pink', 'black', 'gray', 'brown',
+        'appa', 'duck', 'gaara', 'naruto', 'sasuke', 'sakura', 'kakashi',
+        'luffy', 'zoro', 'sanji', 'nami', 'chopper', 'robin', 'franky',
+        'goku', 'vegeta', 'gohan', 'piccolo', 'krillin', 'bulma',
+        'mario', 'luigi', 'peach', 'bowser', 'yoshi', 'toad',
+        'pikachu2', 'charizard', 'blastoise', 'venusaur', 'mewtwo',
+        'sonic', 'tails', 'knuckles', 'shadow', 'amy',
+        'link', 'zelda', 'ganondorf', 'samus', 'kirby2'
       ];
 
-      setAvailableImages({
-        generic: genericImages,
-        medium: mediumImages,
-        good: goodImages
-      });
+      for (const name of commonNames) {
+        for (const ext of extensions) {
+          const imagePath = `/${folderPath}/${name}.${ext}`;
+          try {
+            // Try to load the image to see if it exists
+            const img = new Image();
+            await new Promise((resolve, reject) => {
+              img.onload = resolve;
+              img.onerror = reject;
+              img.src = imagePath;
+            });
+            images.push(imagePath);
+          } catch {
+            // Image doesn't exist, continue
+          }
+        }
+      }
+      
+      return images;
     };
 
-    loadImages();
+    const loadAllImages = async () => {
+      try {
+        const [genericImages, mediumImages, goodImages] = await Promise.all([
+          loadImagesFromFolder('generic'),
+          loadImagesFromFolder('medium'),
+          loadImagesFromFolder('good')
+        ]);
+
+        // Fallback to known images if dynamic loading fails
+        const fallbackGeneric = ['/generic/generic.png', '/generic/generic2.png'];
+        const fallbackMedium = [
+          '/medium/blue.png', '/medium/green.png', '/medium/kirby.png',
+          '/medium/pikachu.png', '/medium/purple.png', '/medium/repo.png',
+          '/medium/repoBlue.png', '/medium/white.png'
+        ];
+        const fallbackGood = ['/good/appa.png', '/good/duck.png', '/good/gaara.png'];
+
+        setAvailableImages({
+          generic: genericImages.length > 0 ? genericImages : fallbackGeneric,
+          medium: mediumImages.length > 0 ? mediumImages : fallbackMedium,
+          good: goodImages.length > 0 ? goodImages : fallbackGood
+        });
+      } catch (error) {
+        console.error('Error loading images dynamically, using fallback:', error);
+        // Use fallback images
+        setAvailableImages({
+          generic: ['/generic/generic.png', '/generic/generic2.png'],
+          medium: [
+            '/medium/blue.png', '/medium/green.png', '/medium/kirby.png',
+            '/medium/pikachu.png', '/medium/purple.png', '/medium/repo.png',
+            '/medium/repoBlue.png', '/medium/white.png'
+          ],
+          good: ['/good/appa.png', '/good/duck.png', '/good/gaara.png']
+        });
+      }
+    };
+
+    loadAllImages();
   }, []);
 
   // Generate dots for a plushie - FIXED Y POSITIONING
@@ -136,7 +185,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     return dots;
   };
 
-  // Generate plushie value
+  // Generate plushie value - UPDATED GOOD CATEGORY PRICING
   const generatePlushieValue = (type: 'generic' | 'medium' | 'good'): number => {
     switch (type) {
       case 'generic':
@@ -144,7 +193,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       case 'medium':
         return Math.floor(Math.random() * 21) + 20; // $20-$40
       case 'good':
-        return 80;
+        return Math.floor(Math.random() * 21) + 80; // $80-$100 (UPDATED)
       default:
         return 10;
     }
@@ -530,6 +579,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
             dots={plushie.dots}
+            showDots={false} // MAKE DOTS INVISIBLE
           />
         ))}
 
