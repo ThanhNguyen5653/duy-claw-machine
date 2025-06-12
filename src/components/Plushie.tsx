@@ -1,5 +1,13 @@
 import React from 'react';
 
+interface DotData {
+  id: string;
+  x: number;
+  y: number;
+  color: 'green' | 'orange' | 'yellow';
+  successRate: number;
+}
+
 interface PlushieProps {
   position: { x: number; y: number };
   imagePath: string;
@@ -8,6 +16,7 @@ interface PlushieProps {
   isGrabbed: boolean;
   isFalling: boolean;
   isDropping: boolean;
+  dots: DotData[];
 }
 
 const Plushie: React.FC<PlushieProps> = ({ 
@@ -17,12 +26,13 @@ const Plushie: React.FC<PlushieProps> = ({
   value, 
   isGrabbed, 
   isFalling, 
-  isDropping 
+  isDropping,
+  dots 
 }) => {
   const getAnimationClass = () => {
     if (isDropping) return 'animate-drop-to-prize';
     if (isFalling) return 'animate-fall-down';
-    if (isGrabbed) return 'transition-all duration-1500 ease-in-out';
+    if (isGrabbed) return 'transition-all duration-1000 ease-in-out';
     return 'animate-bounce-slow';
   };
 
@@ -36,6 +46,32 @@ const Plushie: React.FC<PlushieProps> = ({
         return 'bg-red-500 text-white';
       default:
         return 'bg-gray-500 text-white';
+    }
+  };
+
+  const getDotColor = (color: string) => {
+    switch (color) {
+      case 'green':
+        return 'bg-green-500 border-white';
+      case 'orange':
+        return 'bg-orange-500 border-white';
+      case 'yellow':
+        return 'bg-yellow-500 border-white';
+      default:
+        return 'bg-gray-500 border-white';
+    }
+  };
+
+  const getDotSize = (color: string) => {
+    switch (color) {
+      case 'green':
+        return 'w-4 h-4'; // Largest for 100% success
+      case 'orange':
+        return 'w-3 h-3'; // Medium for 70% success
+      case 'yellow':
+        return 'w-2.5 h-2.5'; // Smaller for 50% success
+      default:
+        return 'w-2 h-2';
     }
   };
 
@@ -68,27 +104,19 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Grab Points (dots) - SCATTERED ON THE PLUSHIE ITSELF */}
-        {!isGrabbed && !isFalling && !isDropping && (
-          <>
-            {/* Center dot - 100% success (GREEN) - Dead center of plushie */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
-            
-            {/* Side dots - Variable success rate (YELLOW) - On the plushie body */}
-            <div className="absolute top-1/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            <div className="absolute top-1/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            
-            {/* Bottom side dots - More yellow dots on plushie */}
-            <div className="absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            <div className="absolute top-2/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            
-            {/* Outer edge dots - Low success rate (ORANGE) - On plushie edges */}
-            <div className="absolute top-1/4 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-1/4 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-3/4 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-3/4 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-          </>
-        )}
+        {/* Dynamic Grab Point Dots */}
+        {!isGrabbed && !isFalling && !isDropping && dots.map((dot) => (
+          <div
+            key={dot.id}
+            className={`absolute ${getDotSize(dot.color)} ${getDotColor(dot.color)} rounded-full animate-pulse border-2 shadow-lg z-20`}
+            style={{
+              left: `calc(50% + ${dot.x}px)`,
+              top: `calc(50% + ${dot.y}px)`,
+              transform: 'translate(-50%, -50%)'
+            }}
+            title={`${dot.color.toUpperCase()} - ${Math.round(dot.successRate * 100)}% success`}
+          />
+        ))}
       </div>
     </div>
   );

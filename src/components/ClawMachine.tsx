@@ -9,6 +9,7 @@ interface ClawMachineProps {
   onResetTimer: () => void;
   onSuccessfulGrab: (plushie: PlushieData) => void;
   onFailedGrab: () => void;
+  timeLeft: number;
 }
 
 interface PlushieData {
@@ -21,7 +22,21 @@ interface PlushieData {
   isGrabbed: boolean;
   isFalling: boolean;
   isDropping: boolean;
+  dots: DotData[];
 }
+
+interface DotData {
+  id: string;
+  x: number; // relative to plushie center
+  y: number; // relative to plushie center
+  color: 'green' | 'orange' | 'yellow';
+  successRate: number;
+}
+
+const CLAW_GRAB_Y = 75; // Y level where claw grabs
+const PLUSHIE_BASE_Y = 75; // Y level where plushies sit
+const PRIZE_BOX_WIDTH = 25; // Bigger prize box
+const MACHINE_WIDTH = 90; // Usable machine width percentage
 
 const ClawMachine: React.FC<ClawMachineProps> = ({
   gameState,
@@ -29,21 +44,22 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
   onPauseTimer,
   onResetTimer,
   onSuccessfulGrab,
-  onFailedGrab
+  onFailedGrab,
+  timeLeft
 }) => {
   const machineRef = useRef<HTMLDivElement>(null);
   const [clawPosition, setClawPosition] = useState({ x: 50, y: 15 });
   const [isClawActive, setIsClawActive] = useState(false);
   const [nextPlushieId, setNextPlushieId] = useState(1);
   const [plushies, setPlushies] = useState<PlushieData[]>([]);
-  const [hasMovedClaw, setHasMovedClaw] = useState(false);
+  const [hasStartedTimer, setHasStartedTimer] = useState(false);
   const [availableImages, setAvailableImages] = useState<{
     generic: string[];
     medium: string[];
     good: string[];
   }>({ generic: [], medium: [], good: [] });
 
-  // Load available images from the public folders
+  // Load available images
   useEffect(() => {
     const loadImages = async () => {
       const genericImages = [
@@ -78,21 +94,48 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadImages();
   }, []);
 
-  // Initialize plushies when images are loaded
-  useEffect(() => {
-    if (availableImages.generic.length > 0 && plushies.length === 0) {
-      const initialPlushies = generatePlushies(4);
-      setPlushies(initialPlushies);
-      setNextPlushieId(5);
-    }
-  }, [availableImages]);
+  // Generate dots for a plushie
+  const generateDots = (): DotData[] => {
+    const dots: DotData[] = [];
+    
+    // Always at least 1 green dot (center)
+    dots.push({
+      id: 'green-center',
+      x: 0,
+      y: 0,
+      color: 'green',
+      successRate: 1.0
+    });
 
+    // Add 2-4 additional dots
+    const additionalDots = Math.floor(Math.random() * 3) + 2; // 2-4 additional
+    
+    for (let i = 0; i < additionalDots; i++) {
+      const angle = (i / additionalDots) * 2 * Math.PI;
+      const radius = 15 + Math.random() * 10; // 15-25px from center
+      
+      const color = Math.random() < 0.3 ? 'orange' : 'yellow';
+      const successRate = color === 'orange' ? 0.7 : 0.5;
+      
+      dots.push({
+        id: `${color}-${i}`,
+        x: Math.cos(angle) * radius,
+        y: Math.sin(angle) * radius,
+        color,
+        successRate
+      });
+    }
+
+    return dots;
+  };
+
+  // Generate plushie value
   const generatePlushieValue = (type: 'generic' | 'medium' | 'good'): number => {
     switch (type) {
       case 'generic':
         return 10;
       case 'medium':
-        return Math.floor(Math.random() * 31) + 20; // $20-$50
+        return Math.floor(Math.random() * 21) + 20; // $20-$40
       case 'good':
         return 80;
       default:
@@ -100,55 +143,65 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   };
 
+  // Generate plushies to maintain 6+ on screen
   const generatePlushies = (count: number): PlushieData[] => {
     const newPlushies: PlushieData[] = [];
-    const currentGoodCount = plushies.filter(p => p.type === 'good' && !p.isGrabbed && !p.isFalling).length;
-    
-    // Create evenly spaced positions with more spacing
-    const spacing = 70 / (count + 1); // Distribute across 70% of the width with more space
     
     for (let i = 0; i < count; i++) {
+      // Determine type with weighted distribution
       let type: 'generic' | 'medium' | 'good';
-      const hasGoodPlushie = currentGoodCount > 0 || newPlushies.some(p => p.type === 'good');
-      
-      // Weighted selection: 50% generic, 40% medium, 10% good (but max 1 good)
       const random = Math.random();
-      if (!hasGoodPlushie && random < 0.1) {
+      
+      if (random < 0.1) { // 10% chance for good
         type = 'good';
-      } else if (random < 0.5) {
-        type = 'generic';
-      } else {
+      } else if (random < 0.4) { // 30% chance for medium
         type = 'medium';
+      } else { // 60% chance for generic
+        type = 'generic';
       }
 
       const typeImages = availableImages[type];
       if (typeImages.length === 0) continue;
 
       const randomImage = typeImages[Math.floor(Math.random() * typeImages.length)];
-      // Better spacing - start at 20% and distribute evenly with more gaps
-      const spacedX = 20 + (i * spacing);
-      const fixedY = 70; // Fixed Y position - matches claw reach exactly
+      
+      // Distribute across machine width, avoiding prize box area
+      const minX = PRIZE_BOX_WIDTH + 5; // Start after prize box
+      const maxX = MACHINE_WIDTH - 5;
+      const spacing = (maxX - minX) / count;
+      const x = minX + (i * spacing) + (Math.random() * 5 - 2.5); // Add slight randomness
       
       newPlushies.push({
         id: nextPlushieId + i,
-        x: spacedX,
-        y: fixedY,
+        x: Math.max(minX, Math.min(maxX, x)),
+        y: PLUSHIE_BASE_Y,
         type,
         imagePath: randomImage,
         value: generatePlushieValue(type),
         isGrabbed: false,
         isFalling: false,
-        isDropping: false
+        isDropping: false,
+        dots: generateDots()
       });
     }
     
     return newPlushies;
   };
 
-  const addNewPlushies = () => {
-    const availablePlushies = plushies.filter(p => !p.isGrabbed && !p.isFalling && !p.isDropping);
-    if (availablePlushies.length < 4) {
-      const needed = 4 - availablePlushies.length;
+  // Initialize plushies when images are loaded
+  useEffect(() => {
+    if (availableImages.generic.length > 0 && plushies.length === 0) {
+      const initialPlushies = generatePlushies(6);
+      setPlushies(initialPlushies);
+      setNextPlushieId(7);
+    }
+  }, [availableImages]);
+
+  // Maintain 6+ plushies
+  const maintainPlushieCount = () => {
+    const activePlushies = plushies.filter(p => !p.isGrabbed && !p.isFalling && !p.isDropping);
+    if (activePlushies.length < 6) {
+      const needed = 6 - activePlushies.length;
       const newPlushies = generatePlushies(needed);
       
       setPlushies(prev => [...prev, ...newPlushies]);
@@ -156,6 +209,21 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   };
 
+  // Auto-grab when timer expires
+  useEffect(() => {
+    if (timeLeft === 0 && hasStartedTimer && !isClawActive && gameState === 'playing') {
+      // Only auto-grab if not over prize box
+      if (clawPosition.x > PRIZE_BOX_WIDTH) {
+        handleClawGrab();
+      } else {
+        // Reset timer if over prize box
+        onResetTimer();
+        setHasStartedTimer(false);
+      }
+    }
+  }, [timeLeft, hasStartedTimer, isClawActive, gameState, clawPosition.x]);
+
+  // Mouse movement handler
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (gameState !== 'playing' || isClawActive) return;
 
@@ -163,212 +231,190 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     if (!rect) return;
 
     const relativeX = ((e.clientX - rect.left) / rect.width) * 100;
-    const clampedX = Math.max(5, Math.min(95, relativeX));
+    const clampedX = Math.max(PRIZE_BOX_WIDTH, Math.min(MACHINE_WIDTH, relativeX));
     
     setClawPosition(prev => ({ ...prev, x: clampedX }));
     
-    if (!hasMovedClaw) {
-      setHasMovedClaw(true);
+    // Start timer on first movement
+    if (!hasStartedTimer) {
+      setHasStartedTimer(true);
       onStartTimer();
     }
-  }, [gameState, isClawActive, hasMovedClaw, onStartTimer]);
+  }, [gameState, isClawActive, hasStartedTimer, onStartTimer]);
 
-  const calculateGrabSuccess = (plushie: PlushieData, clawX: number): { success: boolean; canDrop: boolean } => {
-    const distance = Math.abs(plushie.x - clawX);
-    
-    console.log(`Claw at X: ${clawX}, Plushie at X: ${plushie.x}, Distance: ${distance}`);
-    
-    // Perfect center alignment (green dot) - 100% success, no drop
-    if (distance < 2) {
-      console.log('Perfect hit - green dot!');
-      return { success: true, canDrop: false };
+  // Find dot under claw
+  const findDotUnderClaw = (clawX: number): { plushie: PlushieData; dot: DotData } | null => {
+    for (const plushie of plushies) {
+      if (plushie.isGrabbed || plushie.isFalling || plushie.isDropping) continue;
+      
+      for (const dot of plushie.dots) {
+        const dotWorldX = plushie.x + (dot.x / 4); // Scale dot position
+        const distance = Math.abs(dotWorldX - clawX);
+        
+        if (distance < 2) { // Hit tolerance
+          return { plushie, dot };
+        }
+      }
     }
-    
-    // Side dots alignment - variable success with potential drop
-    if (distance < 4) {
-      console.log('Good hit - yellow dot!');
-      const successRate = 0.8 - (distance * 0.1);
-      return { 
-        success: Math.random() < successRate, 
-        canDrop: Math.random() < 0.3
-      };
-    }
-    
-    // Outer area - low success rate
-    if (distance < 6) {
-      console.log('Edge hit - orange dot!');
-      return { 
-        success: Math.random() < 0.3, 
-        canDrop: Math.random() < 0.6
-      };
-    }
-    
-    console.log('Miss - too far!');
-    return { success: false, canDrop: false };
+    return null;
   };
 
-  const handleClick = useCallback(() => {
-    if (gameState !== 'playing' || isClawActive) return;
-
+  // Handle claw grab sequence
+  const handleClawGrab = useCallback(() => {
+    if (isClawActive) return;
+    
     console.log('=== CLAW GRAB SEQUENCE START ===');
-    console.log(`Initial claw position: X=${clawPosition.x}, Y=${clawPosition.y}`);
-    
     setIsClawActive(true);
-    onPauseTimer(); // Pause timer during grab sequence
+    onPauseTimer();
     
-    // Step 1: Animate claw going down to plushie level (1.5 seconds)
-    console.log('Step 1: Claw moving down...');
-    setClawPosition(prev => ({ ...prev, y: 70 }));
+    // Step 1: Claw goes down
+    setClawPosition(prev => ({ ...prev, y: CLAW_GRAB_Y }));
     
     setTimeout(() => {
-      console.log('Step 2: Checking for collision...');
-      // Step 2: Check for collision with plushies at the EXACT claw position
-      const grabbedPlushie = plushies.find(plushie => {
-        if (plushie.isGrabbed || plushie.isFalling || plushie.isDropping) return false;
+      // Step 2: Check for hits
+      const hit = findDotUnderClaw(clawPosition.x);
+      
+      if (hit) {
+        const { plushie, dot } = hit;
+        const success = Math.random() < dot.successRate;
         
-        const distance = Math.abs(plushie.x - clawPosition.x);
-        console.log(`Checking plushie ${plushie.id}: distance=${distance}`);
-        return distance < 8; // Collision threshold
-      });
-
-      if (grabbedPlushie) {
-        console.log(`Found plushie ${grabbedPlushie.id} to grab!`);
-        const grabResult = calculateGrabSuccess(grabbedPlushie, clawPosition.x);
+        console.log(`Hit ${dot.color} dot, success: ${success}`);
         
-        if (grabResult.success) {
-          console.log('Grab successful! Starting lift sequence...');
+        if (success) {
+          // Successful grab - plushie follows claw exactly
+          setPlushies(prev => 
+            prev.map(p => 
+              p.id === plushie.id 
+                ? { ...p, isGrabbed: true, x: clawPosition.x, y: CLAW_GRAB_Y }
+                : p
+            )
+          );
           
-          // Step 3: Move claw up FIRST (no plushie attached yet)
-          console.log('Step 3: Claw moving up alone...');
-          setClawPosition(prev => ({ ...prev, y: 15 }));
-          
-          // Step 4: After claw reaches top, THEN attach plushie
+          // Step 3: Move up together
           setTimeout(() => {
-            console.log('Step 4: Attaching plushie to claw...');
+            setClawPosition(prev => ({ ...prev, y: 15 }));
             setPlushies(prev => 
               prev.map(p => 
-                p.id === grabbedPlushie.id 
-                  ? { ...p, isGrabbed: true, x: clawPosition.x, y: 15 }
+                p.id === plushie.id 
+                  ? { ...p, y: 15 }
                   : p
               )
             );
             
-            // Step 5: Move BOTH claw and plushie horizontally together
+            // Step 4: Move to prize box together
             setTimeout(() => {
-              console.log('Step 5: Moving to prize box...');
-              const prizeBoxCenterX = 10;
-              setClawPosition(prev => ({ ...prev, x: prizeBoxCenterX }));
+              const prizeBoxX = PRIZE_BOX_WIDTH / 2;
+              setClawPosition(prev => ({ ...prev, x: prizeBoxX }));
               setPlushies(prev => 
                 prev.map(p => 
-                  p.id === grabbedPlushie.id 
-                    ? { ...p, x: prizeBoxCenterX }
+                  p.id === plushie.id 
+                    ? { ...p, x: prizeBoxX }
                     : p
                 )
               );
               
-              // Check if plushie should drop during horizontal movement
-              if (grabResult.canDrop) {
-                console.log('Plushie will drop during transport...');
+              // Step 5: Drop into prize box
+              setTimeout(() => {
+                setPlushies(prev => 
+                  prev.map(p => 
+                    p.id === plushie.id 
+                      ? { ...p, isGrabbed: false, isDropping: true }
+                      : p
+                  )
+                );
+                
                 setTimeout(() => {
-                  setPlushies(prev => 
-                    prev.map(p => 
-                      p.id === grabbedPlushie.id 
-                        ? { ...p, isGrabbed: false, isFalling: true }
-                        : p
-                    )
-                  );
-                  
-                  setTimeout(() => {
-                    const randomX = Math.random() * 60 + 20;
-                    setPlushies(prev => 
-                      prev.map(p => 
-                        p.id === grabbedPlushie.id 
-                          ? { ...p, y: 70, x: randomX, isFalling: false }
-                          : p
-                      )
-                    );
-                  }, 1000);
-                  
-                  setTimeout(() => {
-                    resetClawPosition();
-                    onResetTimer();
-                    onFailedGrab();
-                  }, 1500);
-                }, 1000);
-              } else {
-                // Step 6: Drop plushie into prize box
-                setTimeout(() => {
-                  console.log('Step 6: Dropping into prize box...');
-                  setPlushies(prev => 
-                    prev.map(p => 
-                      p.id === grabbedPlushie.id 
-                        ? { ...p, isGrabbed: false, isDropping: true }
-                        : p
-                    )
-                  );
-                  
-                  setTimeout(() => {
-                    setPlushies(prev => 
-                      prev.map(p => 
-                        p.id === grabbedPlushie.id 
-                          ? { ...p, y: 85, x: prizeBoxCenterX }
-                          : p
-                      )
-                    );
-                    
-                    setTimeout(() => {
-                      const prizeBoxLeft = 0;
-                      const prizeBoxRight = 20;
-                      const finalX = prizeBoxCenterX;
-                      const isInPrizeBox = finalX >= prizeBoxLeft && finalX <= prizeBoxRight;
-                      
-                      console.log(`Final position X: ${finalX}, In prize box: ${isInPrizeBox}`);
-                      
-                      setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
-                      
-                      if (isInPrizeBox) {
-                        onSuccessfulGrab(grabbedPlushie);
-                        addNewPlushies();
-                      } else {
-                        onFailedGrab();
-                      }
-                      
-                      resetClawPosition();
-                      onResetTimer();
-                    }, 800);
-                  }, 200);
+                  setPlushies(prev => prev.filter(p => p.id !== plushie.id));
+                  onSuccessfulGrab(plushie);
+                  maintainPlushieCount();
+                  resetClaw();
                 }, 800);
-              }
-            }, 1500);
-          }, 1200); // Wait for claw to fully reach top before attaching plushie
+              }, 500);
+            }, 1000);
+          }, 1000);
+          
+          return;
+        } else {
+          // Failed grab - show pickup then drop
+          setPlushies(prev => 
+            prev.map(p => 
+              p.id === plushie.id 
+                ? { ...p, isGrabbed: true, x: clawPosition.x, y: CLAW_GRAB_Y }
+                : p
+            )
+          );
+          
+          setTimeout(() => {
+            setClawPosition(prev => ({ ...prev, y: 15 }));
+            setPlushies(prev => 
+              prev.map(p => 
+                p.id === plushie.id 
+                  ? { ...p, y: 15 }
+                  : p
+              )
+            );
+            
+            // Move partway then drop
+            setTimeout(() => {
+              const dropX = clawPosition.x - 15 - Math.random() * 10;
+              setPlushies(prev => 
+                prev.map(p => 
+                  p.id === plushie.id 
+                    ? { ...p, isGrabbed: false, isFalling: true }
+                    : p
+                )
+              );
+              
+              setTimeout(() => {
+                setPlushies(prev => 
+                  prev.map(p => 
+                    p.id === plushie.id 
+                      ? { ...p, x: Math.max(PRIZE_BOX_WIDTH + 5, dropX), y: PLUSHIE_BASE_Y, isFalling: false }
+                      : p
+                  )
+                );
+                
+                setTimeout(() => {
+                  onFailedGrab();
+                  resetClaw();
+                }, 500);
+              }, 800);
+            }, 800);
+          }, 1000);
           
           return;
         }
       }
       
-      console.log('No grab - moving claw back up...');
+      // No hit - just return
       setTimeout(() => {
         setClawPosition(prev => ({ ...prev, y: 15 }));
-        
         setTimeout(() => {
-          resetClawPosition();
-          onResetTimer();
           onFailedGrab();
+          resetClaw();
         }, 1000);
       }, 600);
     }, 1500);
-  }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab, onPauseTimer, onResetTimer]);
+  }, [clawPosition.x, plushies, isClawActive, onSuccessfulGrab, onFailedGrab, onPauseTimer]);
 
-  const resetClawPosition = () => {
+  // Click handler
+  const handleClick = useCallback(() => {
+    if (gameState !== 'playing' || isClawActive) return;
+    handleClawGrab();
+  }, [gameState, isClawActive, handleClawGrab]);
+
+  // Reset claw to center
+  const resetClaw = () => {
     setClawPosition({ x: 50, y: 15 });
     setIsClawActive(false);
-    setHasMovedClaw(false);
+    setHasStartedTimer(false);
+    onResetTimer();
   };
 
   return (
     <div 
       ref={machineRef}
-      className="relative w-[800px] h-[600px] machine-frame cursor-none"
+      className="relative w-[900px] h-[600px] machine-frame cursor-crosshair"
       onMouseMove={handleMouseMove}
       onClick={handleClick}
     >
@@ -381,13 +427,15 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
       {/* Game Area */}
       <div className="absolute top-16 left-8 right-8 bottom-20 game-area">
-        {/* Prize Drop Slot - Wider for better scoring */}
-        <div className="absolute bottom-0 left-0 w-24 h-20 prize-slot border-2 border-yellow-400">
-          <div className="w-full h-full flex items-center justify-center text-xs font-bold text-gray-600">
-            PRIZE
+        {/* Prize Box - Much Bigger */}
+        <div 
+          className="absolute bottom-0 left-0 h-24 prize-slot border-4 border-yellow-400 bg-gradient-to-t from-yellow-200 to-yellow-100"
+          style={{ width: `${PRIZE_BOX_WIDTH}%` }}
+        >
+          <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-800">
+            PRIZE BOX
           </div>
-          {/* Visual scoring indicator */}
-          <div className="absolute -top-1 left-0 right-0 h-1 bg-green-400"></div>
+          <div className="absolute -top-2 left-0 right-0 h-2 bg-green-400 animate-pulse"></div>
         </div>
 
         {/* Claw */}
@@ -404,13 +452,26 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isGrabbed={plushie.isGrabbed}
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
+            dots={plushie.dots}
           />
         ))}
+
+        {/* Machine boundaries visual guide */}
+        <div 
+          className="absolute top-0 bottom-0 w-1 bg-red-400 opacity-30"
+          style={{ left: `${PRIZE_BOX_WIDTH}%` }}
+        ></div>
       </div>
 
       {/* Machine Lighting Effects */}
       <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-red-400 animate-pulse"></div>
       <div className="absolute top-4 right-4 w-4 h-4 rounded-full bg-green-400 animate-pulse"></div>
+      
+      {/* Timer Display */}
+      <div className="absolute top-20 right-12 text-xl font-bold retro-text" 
+           style={{ color: timeLeft <= 10 ? 'hsl(var(--neon-pink))' : 'hsl(var(--neon-yellow))' }}>
+        {hasStartedTimer ? `${timeLeft}s` : 'HOVER TO START'}
+      </div>
     </div>
   );
 };

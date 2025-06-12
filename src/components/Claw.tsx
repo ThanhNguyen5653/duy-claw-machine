@@ -14,8 +14,9 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
         transition: isActive 
-          ? 'top 1.5s ease-in-out, left 1.5s ease-in-out' 
-          : 'left 0.3s ease-out'
+          ? 'top 1s ease-in-out, left 1s ease-in-out' 
+          : 'left 0.1s ease-out', // Faster horizontal movement for responsiveness
+        zIndex: 20
       }}
     >
       {/* Claw Cable */}
@@ -31,7 +32,7 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
       <div className="relative w-12 h-12">
         {/* Claw Center */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-600 rounded-full border-2 border-gray-700 shadow-lg">
-          {/* Claw tip indicator - RED DOT positioned to align with plushie dots */}
+          {/* Claw grab point - RED DOT perfectly aligned */}
           <div className="absolute bottom-[-2px] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
         </div>
         
