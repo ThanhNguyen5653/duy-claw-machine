@@ -94,28 +94,35 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadImages();
   }, []);
 
-  // Generate dots for a plushie
-  const generateDots = (): DotData[] => {
+  // Generate dots for a plushie - UPDATED LOGIC
+  const generateDots = (type: 'generic' | 'medium' | 'good'): DotData[] => {
     const dots: DotData[] = [];
     
-    // Always at least 1 green dot (center)
-    dots.push({
-      id: 'green-center',
-      x: 0,
-      y: 0,
-      color: 'green',
-      successRate: 1.0
-    });
+    // Good category plushies have NO green dots
+    if (type !== 'good') {
+      // Always exactly 1 green dot (not necessarily center) for non-good plushies
+      const greenAngle = Math.random() * 2 * Math.PI;
+      const greenRadius = 5 + Math.random() * 10; // 5-15px from center
+      
+      dots.push({
+        id: 'green-1',
+        x: Math.cos(greenAngle) * greenRadius,
+        y: Math.sin(greenAngle) * greenRadius,
+        color: 'green',
+        successRate: 1.0 // 100% success
+      });
+    }
 
-    // Add 2-4 additional dots
+    // Add 2-4 additional dots (orange and yellow)
     const additionalDots = Math.floor(Math.random() * 3) + 2; // 2-4 additional
     
     for (let i = 0; i < additionalDots; i++) {
-      const angle = (i / additionalDots) * 2 * Math.PI;
-      const radius = 15 + Math.random() * 10; // 15-25px from center
+      const angle = (i / additionalDots) * 2 * Math.PI + Math.random() * 0.5; // Add some randomness
+      const radius = 10 + Math.random() * 15; // 10-25px from center
       
-      const color = Math.random() < 0.3 ? 'orange' : 'yellow';
-      const successRate = color === 'orange' ? 0.7 : 0.5;
+      // Updated probabilities: orange 60%, yellow 40%
+      const color = Math.random() < 0.5 ? 'orange' : 'yellow';
+      const successRate = color === 'orange' ? 0.6 : 0.4; // Orange 60%, Yellow 40%
       
       dots.push({
         id: `${color}-${i}`,
@@ -200,7 +207,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         isGrabbed: false,
         isFalling: false,
         isDropping: false,
-        dots: generateDots()
+        dots: generateDots(type) // Pass type to generate appropriate dots
       });
     }
     

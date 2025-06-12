@@ -67,9 +67,9 @@ const Plushie: React.FC<PlushieProps> = ({
       case 'green':
         return 'w-4 h-4'; // Largest for 100% success
       case 'orange':
-        return 'w-3 h-3'; // Medium for 70% success
+        return 'w-3 h-3'; // Medium for 60% success
       case 'yellow':
-        return 'w-2.5 h-2.5'; // Smaller for 50% success
+        return 'w-2.5 h-2.5'; // Smaller for 40% success
       default:
         return 'w-2 h-2';
     }

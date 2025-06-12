@@ -44,14 +44,14 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [] }) 
             ))}
           </div>
           
-          {/* Extra coins if more than 3 */}
+          {/* Extra coins if more than 3 - CAPPED AT 3 BONUS COINS */}
           {(coinsLeft || 0) > 3 && (
             <div className="mb-4">
               <div className="text-sm retro-text mb-2" style={{ color: 'hsl(var(--neon-green))' }}>
                 BONUS COINS
               </div>
               <div className="flex justify-center flex-wrap gap-1">
-                {Array.from({ length: (coinsLeft || 0) - 3 }, (_, i) => (
+                {Array.from({ length: Math.min((coinsLeft || 0) - 3, 3) }, (_, i) => (
                   <div
                     key={`extra-${i}`}
                     className="w-8 h-8 rounded-full bg-gold-400 border-2 border-gold-600 flex items-center justify-center text-xs"
@@ -61,6 +61,12 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [] }) 
                   </div>
                 ))}
               </div>
+              {/* Show overflow indicator if more than 6 total coins */}
+              {(coinsLeft || 0) > 6 && (
+                <div className="text-xs retro-text mt-1" style={{ color: 'hsl(var(--neon-pink))' }}>
+                  +{(coinsLeft || 0) - 6} more
+                </div>
+              )}
             </div>
           )}
           
