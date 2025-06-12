@@ -386,9 +386,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
               )
             );
             
-            // Move partway then drop
+            // Move partway then drop - NEW LOGIC: Drop between prize box and right bound
             setTimeout(() => {
-              const dropX = clawPosition.x - 15 - Math.random() * 10;
+              // Calculate drop position between prize box and right bound
+              const minDropX = PRIZE_BOX_WIDTH + 5;
+              const maxDropX = MACHINE_WIDTH - 5;
+              const dropX = minDropX + Math.random() * (maxDropX - minDropX);
+              
               setPlushies(prev => 
                 prev.map(p => 
                   p.id === plushie.id 
@@ -401,7 +405,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                 setPlushies(prev => 
                   prev.map(p => 
                     p.id === plushie.id 
-                      ? { ...p, x: Math.max(PRIZE_BOX_WIDTH + 5, dropX), y: PLUSHIE_BASE_Y, isFalling: false }
+                      ? { ...p, x: dropX, y: PLUSHIE_BASE_Y, isFalling: false }
                       : p
                   )
                 );
@@ -466,7 +470,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       {/* Machine Header */}
       <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-r from-gray-600 to-gray-800 flex items-center justify-center">
         <div className="text-lg font-bold retro-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
-          RETRO CLAW MACHINE
+          DUY'S CLAW MACHINE
         </div>
       </div>
 

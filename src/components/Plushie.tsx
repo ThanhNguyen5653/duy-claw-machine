@@ -75,6 +75,14 @@ const Plushie: React.FC<PlushieProps> = ({
     }
   };
 
+  // Special sizing for gaara.png to make it bigger
+  const getPlushieSize = () => {
+    if (imagePath.includes('gaara.png')) {
+      return 'w-28 h-28'; // Bigger size for gaara
+    }
+    return 'w-20 h-20'; // Default size
+  };
+
   return (
     <div
       className={`absolute plushie ${getAnimationClass()}`}
@@ -90,7 +98,7 @@ const Plushie: React.FC<PlushieProps> = ({
         <img 
           src={imagePath}
           alt="Plushie"
-          className="w-20 h-20 object-contain filter drop-shadow-lg animate-wiggle"
+          className={`${getPlushieSize()} object-contain filter drop-shadow-lg animate-wiggle`}
           onError={(e) => {
             console.error('Failed to load image:', imagePath);
             e.currentTarget.style.display = 'none';
