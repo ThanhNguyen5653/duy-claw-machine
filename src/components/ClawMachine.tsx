@@ -221,34 +221,29 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         const grabResult = calculateGrabSuccess(grabbedPlushie, clawPosition.x);
         
         if (grabResult.success) {
-          // Successful grab - Step 3: Move plushie to claw position FIRST
-          setPlushies(prev => 
-            prev.map(p => 
-              p.id === grabbedPlushie.id 
-                ? { ...p, isGrabbed: true, x: clawPosition.x, y: 70 }
-                : p
-            )
-          );
+          // Successful grab - Step 3: FIRST move claw up, THEN move plushie to follow
           
-          // Step 4: Wait a moment, then move BOTH claw and plushie up together
+          // Move claw up first
+          setClawPosition(prev => ({ ...prev, y: 15 }));
+          
+          // Wait for claw to start moving, then grab plushie and make it follow
           setTimeout(() => {
-            // Move both claw and plushie up simultaneously
-            setClawPosition(prev => ({ ...prev, y: 15 }));
             setPlushies(prev => 
               prev.map(p => 
                 p.id === grabbedPlushie.id 
-                  ? { ...p, y: 15 }
+                  ? { ...p, isGrabbed: true, x: clawPosition.x, y: 15 }
                   : p
               )
             );
             
-            // Step 5: Move BOTH claw and plushie horizontally to prize slot together
+            // Step 4: Move BOTH claw and plushie horizontally to prize slot together
             setTimeout(() => {
-              setClawPosition(prev => ({ ...prev, x: 12 })); // Moved to center of wider prize box
+              const prizeBoxCenterX = 12; // Center of the wider prize box
+              setClawPosition(prev => ({ ...prev, x: prizeBoxCenterX }));
               setPlushies(prev => 
                 prev.map(p => 
                   p.id === grabbedPlushie.id 
-                    ? { ...p, x: 12 }
+                    ? { ...p, x: prizeBoxCenterX }
                     : p
                 )
               );
@@ -285,7 +280,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                   }, 1000);
                 }, 800);
               } else {
-                // Step 6: Drop plushie when claw is over prize slot
+                // Step 5: Drop plushie when claw is over prize slot
                 setTimeout(() => {
                   // Start falling animation into prize box
                   setPlushies(prev => 
@@ -306,22 +301,33 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                       )
                     );
                     
-                    // Step 7: Check if plushie landed in prize box and remove/count it
+                    // Step 6: Check if plushie landed in prize box and remove/count it
                     setTimeout(() => {
-                      const finalPlushie = plushies.find(p => p.id === grabbedPlushie.id);
-                      if (finalPlushie) {
-                        // Check if plushie is within the wider prize box bounds (x: 2-22)
-                        if (finalPlushie.x >= 2 && finalPlushie.x <= 22) {
+                      // Get the current plushie position after drop
+                      const currentPlushies = plushies;
+                      const droppedPlushie = currentPlushies.find(p => p.id === grabbedPlushie.id);
+                      
+                      if (droppedPlushie) {
+                        // Prize box bounds: X from 0 to 20 (40 units wide, positioned at left: 0)
+                        // More forgiving scoring - if plushie is anywhere near the prize box
+                        const prizeBoxLeft = 0;
+                        const prizeBoxRight = 20;
+                        const isInPrizeBox = droppedPlushie.x >= prizeBoxLeft && droppedPlushie.x <= prizeBoxRight;
+                        
+                        console.log(`Plushie dropped at X: ${droppedPlushie.x}, Prize box: ${prizeBoxLeft}-${prizeBoxRight}, In box: ${isInPrizeBox}`);
+                        
+                        if (isInPrizeBox) {
                           // Successfully in prize box
                           setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
                           onSuccessfulGrab(grabbedPlushie);
                           addNewPlushies(); // Add new plushies if needed
                         } else {
-                          // Missed the prize box - no score
+                          // Missed the prize box - no score but still remove plushie
                           setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
                           onFailedGrab(); // No coin reward for missing the box
                         }
                       }
+                      
                       resetClawPosition();
                       onResetTimer(); // Reset timer for next turn
                     }, 600);
@@ -329,7 +335,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                 }, 600);
               }
             }, 1500); // Horizontal movement (1.5 seconds)
-          }, 300); // Small delay to ensure plushie is positioned first
+          }, 500); // Wait for claw to move up before grabbing plushie
           
           return;
         }
@@ -370,11 +376,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
       {/* Game Area */}
       <div className="absolute top-16 left-8 right-8 bottom-20 game-area">
-        {/* Prize Drop Slot - Made much wider */}
-        <div className="absolute bottom-0 left-0 w-40 h-20 prize-slot">
+        {/* Prize Drop Slot - Made much wider and positioned for better scoring */}
+        <div className="absolute bottom-0 left-0 w-40 h-20 prize-slot border-4 border-yellow-500">
           <div className="w-full h-full flex items-center justify-center text-sm font-bold text-gray-600">
             PRIZE BOX
           </div>
+          {/* Visual indicator for scoring zone */}
+          <div className="absolute -top-2 left-0 right-0 h-1 bg-green-400 opacity-50"></div>
         </div>
 
         {/* Claw */}
