@@ -14,8 +14,8 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         top: `${position.y}%`,
         transform: 'translate(-50%, -50%)',
         transition: isActive 
-          ? 'top 3s ease-in-out, left 3s ease-in-out' 
-          : 'left 0.5s ease-out'
+          ? 'top 2s ease-in-out, left 2s ease-in-out' 
+          : 'left 0.3s ease-out'
       }}
     >
       {/* Claw Cable */}
@@ -27,17 +27,17 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         }}
       ></div>
       
-      {/* Claw Body */}
-      <div className="relative w-8 h-8">
+      {/* Claw Body - Made slightly bigger */}
+      <div className="relative w-10 h-10">
         {/* Claw Center */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-600 rounded-full border-2 border-gray-700 shadow-lg">
-          {/* Claw tip indicator - RED DOT for alignment */}
-          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full border border-white shadow-md animate-pulse"></div>
+          {/* Claw tip indicator - RED DOT for alignment - Made bigger and more prominent */}
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
         </div>
         
         {/* Left Claw Arm */}
         <div 
-          className={`absolute top-4 -left-2 w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
+          className={`absolute top-5 -left-2 w-5 h-7 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
             isActive ? 'rotate-12' : 'rotate-45'
           }`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}
@@ -45,7 +45,7 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         
         {/* Right Claw Arm */}
         <div 
-          className={`absolute top-4 -right-2 w-4 h-6 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
+          className={`absolute top-5 -right-2 w-5 h-7 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
             isActive ? '-rotate-12' : '-rotate-45'
           }`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}

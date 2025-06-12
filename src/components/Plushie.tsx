@@ -22,7 +22,7 @@ const Plushie: React.FC<PlushieProps> = ({
   const getAnimationClass = () => {
     if (isDropping) return 'animate-drop-to-prize';
     if (isFalling) return 'animate-fall-down';
-    if (isGrabbed) return 'transition-all duration-3000 ease-in-out';
+    if (isGrabbed) return 'transition-all duration-2000 ease-in-out';
     return 'animate-bounce-slow';
   };
 
@@ -49,12 +49,12 @@ const Plushie: React.FC<PlushieProps> = ({
         zIndex: isGrabbed ? 15 : 5
       }}
     >
-      {/* Plushie Body */}
+      {/* Plushie Body - Made bigger */}
       <div className="relative">
         <img 
           src={imagePath}
           alt="Plushie"
-          className="w-12 h-12 object-contain filter drop-shadow-lg animate-wiggle"
+          className="w-20 h-20 object-contain filter drop-shadow-lg animate-wiggle"
           onError={(e) => {
             console.error('Failed to load image:', imagePath);
             e.currentTarget.style.display = 'none';
@@ -63,26 +63,26 @@ const Plushie: React.FC<PlushieProps> = ({
         
         {/* Price Tag - Only show when not grabbed */}
         {!isGrabbed && (
-          <div className={`absolute -top-2 -right-2 px-1 py-0.5 text-xs font-bold rounded ${getPriceTagColor()} z-10`}>
+          <div className={`absolute -top-3 -right-3 px-2 py-1 text-sm font-bold rounded ${getPriceTagColor()} z-10 shadow-lg`}>
             ${value}
           </div>
         )}
         
-        {/* Grab Points (dots) - Enhanced visibility */}
+        {/* Grab Points (dots) - Enhanced visibility and bigger */}
         {!isGrabbed && !isFalling && !isDropping && (
           <>
-            {/* Center dot - 100% success (GREEN) */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg"></div>
+            {/* Center dot - 100% success (GREEN) - Made bigger */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
             
-            {/* Side dots - Variable success rate (YELLOW) */}
-            <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse border border-white"></div>
-            <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse border border-white"></div>
+            {/* Side dots - Variable success rate (YELLOW) - Made bigger */}
+            <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
             
-            {/* Outer dots - Low success rate (ORANGE) */}
-            <div className="absolute top-1/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-2/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-2/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+            {/* Outer dots - Low success rate (ORANGE) - Made bigger */}
+            <div className="absolute top-1/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-1/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-2/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-2/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
           </>
         )}
       </div>
