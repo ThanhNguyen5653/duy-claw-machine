@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Claw from './Claw';
 import Plushie from './Plushie';
@@ -6,7 +5,7 @@ import Plushie from './Plushie';
 interface ClawMachineProps {
   gameState: 'playing' | 'paused' | 'gameOver';
   onStartTimer: () => void;
-  onSuccessfulGrab: (value: number) => void;
+  onSuccessfulGrab: (plushie: PlushieData) => void;
   onFailedGrab: () => void;
 }
 
@@ -166,12 +165,41 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   }, [gameState, isClawActive, hasMovedClaw, onStartTimer]);
 
+  const calculateGrabSuccess = (plushie: PlushieData, clawX: number): { success: boolean; canDrop: boolean } => {
+    const distance = Math.abs(plushie.x - clawX);
+    
+    // Perfect center alignment (green dot) - 100% success, no drop
+    if (distance < 2) {
+      return { success: true, canDrop: false };
+    }
+    
+    // Side dots alignment - variable success with potential drop
+    if (distance < 5) {
+      const successRate = 0.8 - (distance * 0.1); // 80% at distance 2, decreasing
+      return { 
+        success: Math.random() < successRate, 
+        canDrop: Math.random() < 0.3 // 30% chance to drop during transport
+      };
+    }
+    
+    // Outer area - low success rate
+    if (distance < 8) {
+      return { 
+        success: Math.random() < 0.3, 
+        canDrop: Math.random() < 0.6 // 60% chance to drop
+      };
+    }
+    
+    // Too far - no grab
+    return { success: false, canDrop: false };
+  };
+
   const handleClick = useCallback(() => {
     if (gameState !== 'playing' || isClawActive) return;
 
     setIsClawActive(true);
     
-    // Step 1: Animate claw going down slowly (6 seconds)
+    // Step 1: Animate claw going down slowly (3 seconds)
     setClawPosition(prev => ({ ...prev, y: 70 }));
     
     setTimeout(() => {
@@ -184,19 +212,9 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       });
 
       if (grabbedPlushie) {
-        // Determine success chance based on accuracy
-        const distance = Math.abs(grabbedPlushie.x - clawPosition.x);
-        let successChance: number;
+        const grabResult = calculateGrabSuccess(grabbedPlushie, clawPosition.x);
         
-        if (distance < 3) {
-          successChance = 1.0; // Center dot - 100% success
-        } else if (distance < 6) {
-          successChance = Math.random() > 0.4 ? 0.6 : 0.4; // Side dots - 40-60% success
-        } else {
-          successChance = Math.random() > 0.6 ? 0.4 : 0.2; // Outer dots - 20-40% success
-        }
-        
-        if (Math.random() < successChance) {
+        if (grabResult.success) {
           // Successful grab - Step 3: Move plushie to claw position and follow claw up
           setPlushies(prev => 
             prev.map(p => 
@@ -206,7 +224,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             )
           );
           
-          // Step 4: Move claw (with plushie) slowly back up to top (6 seconds)
+          // Step 4: Move claw (with plushie) slowly back up to top (3 seconds)
           setTimeout(() => {
             setClawPosition(prev => ({ ...prev, y: 10 }));
             setPlushies(prev => 
@@ -217,7 +235,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
               )
             );
             
-            // Step 5: Move claw (with plushie) horizontally to prize slot (6 seconds)
+            // Step 5: Move claw (with plushie) horizontally to prize slot (3 seconds)
             setTimeout(() => {
               setClawPosition(prev => ({ ...prev, x: 15 }));
               setPlushies(prev => 
@@ -228,10 +246,8 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                 )
               );
               
-              // Check if plushie should drop during horizontal movement (for side/outer dots)
-              const shouldDrop = distance >= 3 && Math.random() < 0.5; // 50% chance for non-center dots
-              
-              if (shouldDrop) {
+              // Check if plushie should drop during horizontal movement
+              if (grabResult.canDrop) {
                 // Plushie drops during horizontal movement with smooth animation
                 setTimeout(() => {
                   setPlushies(prev => 
@@ -252,90 +268,63 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                           : p
                       )
                     );
-                  }, 1500);
+                  }, 1000);
                   
-                  // Reset claw and fail (3 seconds)
+                  // Reset claw and fail (2 seconds)
                   setTimeout(() => {
                     resetClawPosition();
                     onFailedGrab();
-                  }, 3000);
-                }, 2000);
+                  }, 2000);
+                }, 1500);
               } else {
                 // Step 6: Drop plushie when claw is over prize slot
                 setTimeout(() => {
-                  if (clawPosition.x <= 20) {
-                    // Start falling animation into prize box
+                  // Start falling animation into prize box
+                  setPlushies(prev => 
+                    prev.map(p => 
+                      p.id === grabbedPlushie.id 
+                        ? { ...p, isGrabbed: false, isDropping: true }
+                        : p
+                    )
+                  );
+                  
+                  // Animate falling into prize box with bounce effect
+                  setTimeout(() => {
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, isGrabbed: false, isDropping: true }
+                          ? { ...p, y: 85 }
                           : p
                       )
                     );
                     
-                    // Animate falling into prize box
+                    // Step 7: Remove plushie and reset claw (successful grab)
                     setTimeout(() => {
-                      setPlushies(prev => 
-                        prev.map(p => 
-                          p.id === grabbedPlushie.id 
-                            ? { ...p, y: 85 }
-                            : p
-                        )
-                      );
-                      
-                      // Step 7: Remove plushie and reset claw (successful grab)
-                      setTimeout(() => {
-                        setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
-                        resetClawPosition();
-                        onSuccessfulGrab(grabbedPlushie.value);
-                        addNewPlushies(); // Add new plushies if needed
-                      }, 2000);
-                    }, 500);
-                  } else {
-                    // If not over prize area, drop back to main area with animation
-                    setPlushies(prev => 
-                      prev.map(p => 
-                        p.id === grabbedPlushie.id 
-                          ? { ...p, isGrabbed: false, isFalling: true }
-                          : p
-                      )
-                    );
-                    
-                    setTimeout(() => {
-                      const randomX = Math.random() * 60 + 20;
-                      setPlushies(prev => 
-                        prev.map(p => 
-                          p.id === grabbedPlushie.id 
-                            ? { ...p, y: 75, x: randomX, isFalling: false }
-                            : p
-                        )
-                      );
-                      
-                      setTimeout(() => {
-                        resetClawPosition();
-                        onFailedGrab();
-                      }, 3000);
-                    }, 1500);
-                  }
-                }, 2000);
+                      setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
+                      resetClawPosition();
+                      onSuccessfulGrab(grabbedPlushie);
+                      addNewPlushies(); // Add new plushies if needed
+                    }, 1000);
+                  }, 300);
+                }, 1000);
               }
-            }, 6000); // Slower horizontal movement (6 seconds)
-          }, 6000); // Slower vertical movement up (6 seconds)
+            }, 3000); // Horizontal movement (3 seconds)
+          }, 3000); // Vertical movement up (3 seconds)
           
           return;
         }
       }
       
-      // Failed grab or no plushie - Step 3: Move claw back up (4 seconds)
+      // Failed grab or no plushie - Step 3: Move claw back up (2 seconds)
       setTimeout(() => {
         setClawPosition(prev => ({ ...prev, y: 10 }));
         
         setTimeout(() => {
           resetClawPosition();
           onFailedGrab();
-        }, 4000); // Slower movement back up
-      }, 2000);
-    }, 6000); // Slower movement down (6 seconds)
+        }, 2000); // Movement back up
+      }, 1000);
+    }, 3000); // Movement down (3 seconds)
   }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab]);
 
   const resetClawPosition = () => {

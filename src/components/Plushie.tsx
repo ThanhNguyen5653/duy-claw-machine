@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface PlushieProps {
@@ -23,7 +22,7 @@ const Plushie: React.FC<PlushieProps> = ({
   const getAnimationClass = () => {
     if (isDropping) return 'animate-drop-to-prize';
     if (isFalling) return 'animate-fall-down';
-    if (isGrabbed) return 'transition-all duration-6000 ease-in-out';
+    if (isGrabbed) return 'transition-all duration-3000 ease-in-out';
     return 'animate-bounce-slow';
   };
 
@@ -69,21 +68,21 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Grab Points (dots) */}
+        {/* Grab Points (dots) - Enhanced visibility */}
         {!isGrabbed && !isFalling && !isDropping && (
           <>
-            {/* Center dot - 100% success */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+            {/* Center dot - 100% success (GREEN) */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg"></div>
             
-            {/* Side dots - 40-60% success rate */}
-            <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-yellow-500 rounded-full animate-pulse"></div>
+            {/* Side dots - Variable success rate (YELLOW) */}
+            <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse border border-white"></div>
+            <div className="absolute top-1/2 right-1/4 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-yellow-500 rounded-full animate-pulse border border-white"></div>
             
-            {/* Additional side dots for better grab zones - 40-60% success but can drop */}
-            <div className="absolute top-1/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-1/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-2/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
-            <div className="absolute top-2/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1 h-1 bg-orange-500 rounded-full animate-pulse"></div>
+            {/* Outer dots - Low success rate (ORANGE) */}
+            <div className="absolute top-1/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+            <div className="absolute top-1/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+            <div className="absolute top-2/3 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
+            <div className="absolute top-2/3 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse"></div>
           </>
         )}
       </div>

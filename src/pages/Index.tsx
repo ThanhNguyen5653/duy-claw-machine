@@ -1,19 +1,30 @@
-
 import { useState, useEffect } from 'react';
 import GameContainer from '../components/GameContainer';
 import StartScreen from '../components/StartScreen';
 
 type GameState = 'start' | 'playing' | 'paused' | 'gameOver';
 
+interface PlushieData {
+  id: number;
+  x: number;
+  y: number;
+  type: 'generic' | 'medium' | 'good';
+  imagePath: string;
+  value: number;
+  isGrabbed: boolean;
+  isFalling: boolean;
+  isDropping: boolean;
+}
+
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>('start');
-  const [score, setScore] = useState(0);
   const [coinsLeft, setCoinsLeft] = useState(3);
+  const [topPlushies, setTopPlushies] = useState<PlushieData[]>([]);
 
   const startGame = () => {
     setGameState('playing');
-    setScore(0);
     setCoinsLeft(3);
+    setTopPlushies([]);
   };
 
   const pauseGame = () => {
@@ -28,11 +39,15 @@ const Index = () => {
     setGameState('start');
   };
 
-  const addScore = (points: number) => {
-    setScore(prev => prev + points);
+  const updateTopPlushies = (newPlushie: PlushieData) => {
+    setTopPlushies(prev => {
+      const updated = [...prev, newPlushie];
+      // Sort by value (highest first) and keep only top 3
+      return updated.sort((a, b) => b.value - a.value).slice(0, 3);
+    });
   };
 
-  const useArcade = () => {
+  const useCoin = () => {
     setCoinsLeft(prev => {
       const newCoins = prev - 1;
       if (newCoins <= 0) {
@@ -40,6 +55,10 @@ const Index = () => {
       }
       return newCoins;
     });
+  };
+
+  const addCoin = () => {
+    setCoinsLeft(prev => prev + 1);
   };
 
   if (gameState === 'start') {
@@ -50,12 +69,13 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900">
       <GameContainer
         gameState={gameState}
-        score={score}
         coinsLeft={coinsLeft}
         onPause={pauseGame}
         onReset={resetGame}
-        onAddScore={addScore}
-        onUseCoin={useArcade}
+        onUseCoin={useCoin}
+        onAddCoin={addCoin}
+        topPlushies={topPlushies}
+        onUpdateTopPlushies={updateTopPlushies}
       />
     </div>
   );

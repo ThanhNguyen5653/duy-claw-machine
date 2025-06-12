@@ -1,27 +1,40 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import ClawMachine from './ClawMachine';
 import Sidebar from './Sidebar';
 import GameControls from './GameControls';
 
+interface PlushieData {
+  id: number;
+  x: number;
+  y: number;
+  type: 'generic' | 'medium' | 'good';
+  imagePath: string;
+  value: number;
+  isGrabbed: boolean;
+  isFalling: boolean;
+  isDropping: boolean;
+}
+
 interface GameContainerProps {
   gameState: 'playing' | 'paused' | 'gameOver';
-  score: number;
   coinsLeft: number;
   onPause: () => void;
   onReset: () => void;
-  onAddScore: (points: number) => void;
   onUseCoin: () => void;
+  onAddCoin: () => void;
+  topPlushies: PlushieData[];
+  onUpdateTopPlushies: (plushie: PlushieData) => void;
 }
 
 const GameContainer: React.FC<GameContainerProps> = ({
   gameState,
-  score,
   coinsLeft,
   onPause,
   onReset,
-  onAddScore,
-  onUseCoin
+  onUseCoin,
+  onAddCoin,
+  topPlushies,
+  onUpdateTopPlushies
 }) => {
   const [timeLeft, setTimeLeft] = useState(20);
   const [isTimerActive, setIsTimerActive] = useState(false);
@@ -58,8 +71,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
-  const handleSuccessfulGrab = (value: number) => {
-    onAddScore(value);
+  const handleSuccessfulGrab = (plushie: PlushieData) => {
+    onUpdateTopPlushies(plushie);
+    onAddCoin(); // Reward player with +1 coin for successful grab
     resetTimer();
   };
 
@@ -77,8 +91,28 @@ const GameContainer: React.FC<GameContainerProps> = ({
             GAME OVER
           </h2>
           <div className="text-3xl retro-text mb-8" style={{ color: 'hsl(var(--neon-yellow))' }}>
-            FINAL SCORE: ${score}
+            TOP COLLECTION
           </div>
+          
+          {/* Display top 3 plushies */}
+          <div className="flex justify-center gap-8 mb-8">
+            {topPlushies.slice(0, 3).map((plushie, index) => (
+              <div key={plushie.id} className="text-center">
+                <div className="text-lg retro-text mb-2" style={{ color: 'hsl(var(--neon-cyan))' }}>
+                  #{index + 1}
+                </div>
+                <img 
+                  src={plushie.imagePath} 
+                  alt="Top Plushie" 
+                  className="w-16 h-16 object-contain mx-auto mb-2"
+                />
+                <div className="text-xl font-bold retro-text" style={{ color: 'hsl(var(--neon-yellow))' }}>
+                  ${plushie.value}
+                </div>
+              </div>
+            ))}
+          </div>
+          
           <button
             onClick={onReset}
             className="px-8 py-4 text-2xl font-bold retro-text neon-border bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 transition-all duration-300"
@@ -125,8 +159,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
         />
       </div>
 
-      {/* Right Sidebar - Score */}
-      <Sidebar side="right" score={score} />
+      {/* Right Sidebar - Top Plushies Display */}
+      <Sidebar side="right" topPlushies={topPlushies} />
     </div>
   );
 };
