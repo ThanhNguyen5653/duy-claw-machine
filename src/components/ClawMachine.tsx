@@ -123,7 +123,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
       const randomImage = typeImages[Math.floor(Math.random() * typeImages.length)];
       const randomX = Math.random() * 60 + 20; // Between 20-80%
-      const fixedY = 65; // Fixed Y position for all plushies - adjusted higher to match claw reach
+      const fixedY = 70; // Fixed Y position - adjusted to match claw reach perfectly
       
       newPlushies.push({
         id: nextPlushieId + i,
@@ -205,8 +205,8 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     onPauseTimer(); // Pause timer during grab sequence
     
     // Step 1: Animate claw going down to plushie level (1.5 seconds)
-    // The claw needs to stop at Y=65 to match the plushie level exactly
-    setClawPosition(prev => ({ ...prev, y: 65 })); // Match plushie level exactly
+    // CRITICAL: The claw needs to stop at Y=70 to match the plushie level exactly
+    setClawPosition(prev => ({ ...prev, y: 70 })); // Match plushie level exactly
     
     setTimeout(() => {
       // Step 2: Check for collision with plushies
@@ -225,7 +225,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
           setPlushies(prev => 
             prev.map(p => 
               p.id === grabbedPlushie.id 
-                ? { ...p, isGrabbed: true, x: clawPosition.x, y: 65 }
+                ? { ...p, isGrabbed: true, x: clawPosition.x, y: 70 }
                 : p
             )
           );
@@ -271,7 +271,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, y: 65, x: randomX, isFalling: false }
+                          ? { ...p, y: 70, x: randomX, isFalling: false }
                           : p
                       )
                     );
