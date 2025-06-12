@@ -31,8 +31,8 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
       <div className="relative w-12 h-12">
         {/* Claw Center */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-600 rounded-full border-2 border-gray-700 shadow-lg">
-          {/* Claw tip indicator - RED DOT positioned at the very bottom center */}
-          <div className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
+          {/* Claw tip indicator - RED DOT positioned to align with plushie dots */}
+          <div className="absolute bottom-[-2px] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
         </div>
         
         {/* Left Claw Arm */}
