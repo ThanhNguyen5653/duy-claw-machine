@@ -68,21 +68,21 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Grab Points (dots) - Enhanced visibility and bigger - Positioned at the very top center */}
+        {/* Grab Points (dots) - Enhanced visibility and bigger - Positioned to align with claw red dot */}
         {!isGrabbed && !isFalling && !isDropping && (
           <>
-            {/* Center dot - 100% success (GREEN) - Positioned at the very top center */}
-            <div className="absolute top-[-8px] left-1/2 transform -translate-x-1/2 w-6 h-6 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
+            {/* Center dot - 100% success (GREEN) - Positioned to align with claw red dot */}
+            <div className="absolute top-[-4px] left-1/2 transform -translate-x-1/2 w-6 h-6 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
             
             {/* Side dots - Variable success rate (YELLOW) - Positioned at top sides */}
-            <div className="absolute top-[-6px] left-1/4 transform -translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            <div className="absolute top-[-6px] right-1/4 transform translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-[-2px] left-1/4 transform -translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-[-2px] right-1/4 transform translate-x-1/2 w-4 h-4 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
             
             {/* Outer dots - Low success rate (ORANGE) - Positioned around the edges */}
-            <div className="absolute top-[4px] left-1/6 transform -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-[4px] right-1/6 transform translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-[16px] left-1/6 transform -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-[16px] right-1/6 transform translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[8px] left-1/6 transform -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[8px] right-1/6 transform translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[20px] left-1/6 transform -translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-[20px] right-1/6 transform translate-x-1/2 w-3 h-3 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
           </>
         )}
       </div>
