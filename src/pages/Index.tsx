@@ -36,7 +36,17 @@ const Index = () => {
   };
 
   const resetGame = () => {
+    // Reset to current game state but clear progress
+    setCoinsLeft(3);
+    setTopPlushies([]);
+    setGameState('playing');
+  };
+
+  const restartGame = () => {
+    // Go back to start screen
     setGameState('start');
+    setCoinsLeft(3);
+    setTopPlushies([]);
   };
 
   const updateTopPlushies = (newPlushie: PlushieData) => {
@@ -72,6 +82,7 @@ const Index = () => {
         coinsLeft={coinsLeft}
         onPause={pauseGame}
         onReset={resetGame}
+        onRestart={restartGame}
         onUseCoin={useCoin}
         onAddCoin={addCoin}
         topPlushies={topPlushies}

@@ -143,16 +143,30 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   };
 
+  // Check if position overlaps with existing plushies
+  const isPositionOccupied = (x: number, existingPlushies: PlushieData[]): boolean => {
+    return existingPlushies.some(plushie => 
+      !plushie.isGrabbed && !plushie.isFalling && !plushie.isDropping &&
+      Math.abs(plushie.x - x) < 8 // Minimum 8% spacing between plushies
+    );
+  };
+
   // Generate plushies to maintain 6+ on screen
   const generatePlushies = (count: number): PlushieData[] => {
     const newPlushies: PlushieData[] = [];
+    const currentGoodCount = plushies.filter(p => 
+      p.type === 'good' && !p.isGrabbed && !p.isFalling && !p.isDropping
+    ).length;
     
     for (let i = 0; i < count; i++) {
       // Determine type with weighted distribution
       let type: 'generic' | 'medium' | 'good';
       const random = Math.random();
       
-      if (random < 0.1) { // 10% chance for good
+      // Only allow 1 good plushie at a time
+      const hasGoodPlushie = currentGoodCount > 0 || newPlushies.some(p => p.type === 'good');
+      
+      if (!hasGoodPlushie && random < 0.1) { // 10% chance for good (if none exists)
         type = 'good';
       } else if (random < 0.4) { // 30% chance for medium
         type = 'medium';
@@ -165,11 +179,16 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
       const randomImage = typeImages[Math.floor(Math.random() * typeImages.length)];
       
-      // Distribute across machine width, avoiding prize box area
-      const minX = PRIZE_BOX_WIDTH + 5; // Start after prize box
+      // Find non-overlapping position
+      const minX = PRIZE_BOX_WIDTH + 5;
       const maxX = MACHINE_WIDTH - 5;
-      const spacing = (maxX - minX) / count;
-      const x = minX + (i * spacing) + (Math.random() * 5 - 2.5); // Add slight randomness
+      let x: number;
+      let attempts = 0;
+      
+      do {
+        x = minX + Math.random() * (maxX - minX);
+        attempts++;
+      } while (isPositionOccupied(x, [...plushies, ...newPlushies]) && attempts < 20);
       
       newPlushies.push({
         id: nextPlushieId + i,
@@ -223,6 +242,19 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   }, [timeLeft, hasStartedTimer, isClawActive, gameState, clawPosition.x]);
 
+  // Pause/Resume functionality
+  useEffect(() => {
+    if (gameState === 'paused') {
+      // Freeze all animations and interactions
+      setIsClawActive(true); // Prevent new actions
+    } else if (gameState === 'playing') {
+      // Only resume if we were actually in a grab sequence
+      if (isClawActive && !hasStartedTimer) {
+        setIsClawActive(false);
+      }
+    }
+  }, [gameState]);
+
   // Mouse movement handler
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
     if (gameState !== 'playing' || isClawActive) return;
@@ -261,7 +293,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
   // Handle claw grab sequence
   const handleClawGrab = useCallback(() => {
-    if (isClawActive) return;
+    if (isClawActive || gameState !== 'playing') return;
     
     console.log('=== CLAW GRAB SEQUENCE START ===');
     setIsClawActive(true);
@@ -395,7 +427,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         }, 1000);
       }, 600);
     }, 1500);
-  }, [clawPosition.x, plushies, isClawActive, onSuccessfulGrab, onFailedGrab, onPauseTimer]);
+  }, [clawPosition.x, plushies, isClawActive, gameState, onSuccessfulGrab, onFailedGrab, onPauseTimer]);
 
   // Click handler
   const handleClick = useCallback(() => {
@@ -411,28 +443,61 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     onResetTimer();
   };
 
+  // Reset everything when game resets
+  useEffect(() => {
+    if (gameState === 'gameOver') {
+      setPlushies([]);
+      setNextPlushieId(1);
+      resetClaw();
+    }
+  }, [gameState]);
+
   return (
     <div 
       ref={machineRef}
-      className="relative w-[900px] h-[600px] machine-frame cursor-crosshair"
+      className="relative w-full max-w-[800px] h-[500px] machine-frame cursor-crosshair mx-auto"
       onMouseMove={handleMouseMove}
       onClick={handleClick}
+      style={{ 
+        pointerEvents: gameState === 'paused' ? 'none' : 'auto',
+        filter: gameState === 'paused' ? 'grayscale(50%)' : 'none'
+      }}
     >
       {/* Machine Header */}
-      <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-r from-gray-600 to-gray-800 flex items-center justify-center">
-        <div className="text-2xl font-bold retro-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
+      <div className="absolute top-0 left-0 right-0 h-12 bg-gradient-to-r from-gray-600 to-gray-800 flex items-center justify-center">
+        <div className="text-lg font-bold retro-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
           RETRO CLAW MACHINE
         </div>
       </div>
 
+      {/* Timer Display with Better Contrast */}
+      <div className="absolute top-2 right-4 px-3 py-1 rounded-lg bg-black/80 border-2 border-yellow-400">
+        <div className="text-lg font-bold retro-text text-center" 
+             style={{ 
+               color: timeLeft <= 10 ? '#ff0080' : '#ffff00',
+               textShadow: '0 0 10px currentColor'
+             }}>
+          {hasStartedTimer ? `${timeLeft}s` : 'HOVER'}
+        </div>
+      </div>
+
+      {/* Pause Overlay */}
+      {gameState === 'paused' && (
+        <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="text-4xl font-bold retro-text neon-glow" style={{ color: 'hsl(var(--neon-cyan))' }}>
+            PAUSED
+          </div>
+        </div>
+      )}
+
       {/* Game Area */}
-      <div className="absolute top-16 left-8 right-8 bottom-20 game-area">
+      <div className="absolute top-12 left-4 right-4 bottom-16 game-area">
         {/* Prize Box - Much Bigger */}
         <div 
-          className="absolute bottom-0 left-0 h-24 prize-slot border-4 border-yellow-400 bg-gradient-to-t from-yellow-200 to-yellow-100"
+          className="absolute bottom-0 left-0 h-20 prize-slot border-4 border-yellow-400 bg-gradient-to-t from-yellow-200 to-yellow-100"
           style={{ width: `${PRIZE_BOX_WIDTH}%` }}
         >
-          <div className="w-full h-full flex items-center justify-center text-lg font-bold text-gray-800">
+          <div className="w-full h-full flex items-center justify-center text-sm font-bold text-gray-800">
             PRIZE BOX
           </div>
           <div className="absolute -top-2 left-0 right-0 h-2 bg-green-400 animate-pulse"></div>
@@ -464,14 +529,8 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       </div>
 
       {/* Machine Lighting Effects */}
-      <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-red-400 animate-pulse"></div>
-      <div className="absolute top-4 right-4 w-4 h-4 rounded-full bg-green-400 animate-pulse"></div>
-      
-      {/* Timer Display */}
-      <div className="absolute top-20 right-12 text-xl font-bold retro-text" 
-           style={{ color: timeLeft <= 10 ? 'hsl(var(--neon-pink))' : 'hsl(var(--neon-yellow))' }}>
-        {hasStartedTimer ? `${timeLeft}s` : 'HOVER TO START'}
-      </div>
+      <div className="absolute top-2 left-2 w-3 h-3 rounded-full bg-red-400 animate-pulse"></div>
+      <div className="absolute top-2 left-8 w-3 h-3 rounded-full bg-green-400 animate-pulse"></div>
     </div>
   );
 };

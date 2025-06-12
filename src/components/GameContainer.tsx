@@ -21,6 +21,7 @@ interface GameContainerProps {
   coinsLeft: number;
   onPause: () => void;
   onReset: () => void;
+  onRestart: () => void;
   onUseCoin: () => void;
   onAddCoin: () => void;
   topPlushies: PlushieData[];
@@ -32,6 +33,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
   coinsLeft,
   onPause,
   onReset,
+  onRestart,
   onUseCoin,
   onAddCoin,
   topPlushies,
@@ -84,20 +86,29 @@ const GameContainer: React.FC<GameContainerProps> = ({
     onUseCoin(); // Lose 1 coin for failed grab
   };
 
+  // Pause timer when game is paused
+  useEffect(() => {
+    if (gameState === 'paused') {
+      pauseTimer();
+    } else if (gameState === 'playing' && isTimerActive) {
+      setIsTimerPaused(false);
+    }
+  }, [gameState, isTimerActive]);
+
   if (gameState === 'gameOver') {
     return (
-      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-6xl font-bold mb-8 retro-text neon-glow" 
+      <div className="min-h-screen bg-gradient-to-b from-slate-900 via-blue-900 to-slate-900 flex items-center justify-center p-4">
+        <div className="text-center max-w-4xl">
+          <h2 className="text-4xl md:text-6xl font-bold mb-8 retro-text neon-glow" 
               style={{ color: 'hsl(var(--neon-pink))' }}>
             GAME OVER
           </h2>
-          <div className="text-3xl retro-text mb-8" style={{ color: 'hsl(var(--neon-yellow))' }}>
+          <div className="text-2xl md:text-3xl retro-text mb-8" style={{ color: 'hsl(var(--neon-yellow))' }}>
             FINAL COLLECTION
           </div>
           
           {/* Display top 3 plushies */}
-          <div className="flex justify-center gap-8 mb-8">
+          <div className="flex justify-center gap-4 md:gap-8 mb-8 flex-wrap">
             {topPlushies.slice(0, 3).map((plushie, index) => (
               <div key={plushie.id} className="text-center">
                 <div className="text-lg retro-text mb-2" style={{ color: 'hsl(var(--neon-cyan))' }}>
@@ -106,22 +117,22 @@ const GameContainer: React.FC<GameContainerProps> = ({
                 <img 
                   src={plushie.imagePath} 
                   alt="Top Plushie" 
-                  className="w-16 h-16 object-contain mx-auto mb-2"
+                  className="w-12 h-12 md:w-16 md:h-16 object-contain mx-auto mb-2"
                 />
-                <div className="text-xl font-bold retro-text" style={{ color: 'hsl(var(--neon-yellow))' }}>
+                <div className="text-lg md:text-xl font-bold retro-text" style={{ color: 'hsl(var(--neon-yellow))' }}>
                   ${plushie.value}
                 </div>
               </div>
             ))}
           </div>
           
-          <div className="text-2xl retro-text mb-8" style={{ color: 'hsl(var(--neon-green))' }}>
+          <div className="text-xl md:text-2xl retro-text mb-8" style={{ color: 'hsl(var(--neon-green))' }}>
             Total Value: ${topPlushies.slice(0, 3).reduce((sum, p) => sum + p.value, 0)}
           </div>
           
           <button
-            onClick={onReset}
-            className="px-8 py-4 text-2xl font-bold retro-text neon-border bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 transition-all duration-300"
+            onClick={onRestart}
+            className="px-6 md:px-8 py-3 md:py-4 text-xl md:text-2xl font-bold retro-text neon-border bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-500 hover:to-blue-500 transition-all duration-300"
             style={{ color: 'hsl(var(--neon-cyan))' }}
           >
             PLAY AGAIN
@@ -132,13 +143,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex flex-col lg:flex-row p-4 gap-4">
       {/* Left Sidebar - Coins */}
       <Sidebar side="left" coinsLeft={coinsLeft} />
       
       {/* Main Game Area */}
-      <div className="flex-1 flex flex-col items-center justify-center p-8">
-        <h1 className="text-6xl font-bold mb-6 retro-text neon-glow animate-neon-pulse" 
+      <div className="flex-1 flex flex-col items-center justify-center">
+        <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold mb-4 retro-text neon-glow animate-neon-pulse" 
             style={{ color: 'hsl(var(--neon-cyan))' }}>
           RETRO CLAW
         </h1>
@@ -159,6 +170,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
           gameState={gameState}
           onPause={onPause}
           onReset={onReset}
+          onRestart={onRestart}
         />
       </div>
 
