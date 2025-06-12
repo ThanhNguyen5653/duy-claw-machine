@@ -28,7 +28,7 @@ interface PlushieData {
 interface DotData {
   id: string;
   x: number; // relative to plushie center
-  y: number; // relative to plushie center
+  y: number; // relative to plushie center - FIXED TO BE AT CLAW LEVEL
   color: 'green' | 'orange' | 'yellow';
   successRate: number;
 }
@@ -94,7 +94,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadImages();
   }, []);
 
-  // Generate dots for a plushie - UPDATED LOGIC
+  // Generate dots for a plushie - FIXED Y POSITIONING
   const generateDots = (type: 'generic' | 'medium' | 'good'): DotData[] => {
     const dots: DotData[] = [];
     
@@ -107,7 +107,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       dots.push({
         id: 'green-1',
         x: Math.cos(greenAngle) * greenRadius,
-        y: Math.sin(greenAngle) * greenRadius,
+        y: 0, // FIXED: All dots at same Y level (claw level)
         color: 'green',
         successRate: 1.0 // 100% success
       });
@@ -127,7 +127,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       dots.push({
         id: `${color}-${i}`,
         x: Math.cos(angle) * radius,
-        y: Math.sin(angle) * radius,
+        y: 0, // FIXED: All dots at same Y level (claw level)
         color,
         successRate
       });
@@ -281,12 +281,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   }, [gameState, isClawActive, hasStartedTimer, onStartTimer]);
 
-  // Find dot under claw
+  // Find dot under claw - UPDATED FOR FIXED Y POSITIONING
   const findDotUnderClaw = (clawX: number): { plushie: PlushieData; dot: DotData } | null => {
     for (const plushie of plushies) {
       if (plushie.isGrabbed || plushie.isFalling || plushie.isDropping) continue;
       
       for (const dot of plushie.dots) {
+        // Since all dots are now at Y=0 (same level as claw), we only check X distance
         const dotWorldX = plushie.x + (dot.x / 4); // Scale dot position
         const distance = Math.abs(dotWorldX - clawX);
         

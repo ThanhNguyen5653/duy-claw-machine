@@ -3,7 +3,7 @@ import React from 'react';
 interface DotData {
   id: string;
   x: number;
-  y: number;
+  y: number; // Now always 0 (same level as claw)
   color: 'green' | 'orange' | 'yellow';
   successRate: number;
 }
@@ -112,14 +112,14 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Dynamic Grab Point Dots */}
+        {/* Dynamic Grab Point Dots - FIXED Y POSITIONING */}
         {!isGrabbed && !isFalling && !isDropping && dots.map((dot) => (
           <div
             key={dot.id}
             className={`absolute ${getDotSize(dot.color)} ${getDotColor(dot.color)} rounded-full animate-pulse border-2 shadow-lg z-20`}
             style={{
               left: `calc(50% + ${dot.x}px)`,
-              top: `calc(50% + ${dot.y}px)`,
+              top: `calc(50% + ${dot.y}px)`, // Since dot.y is always 0, this centers vertically
               transform: 'translate(-50%, -50%)'
             }}
             title={`${dot.color.toUpperCase()} - ${Math.round(dot.successRate * 100)}% success`}
