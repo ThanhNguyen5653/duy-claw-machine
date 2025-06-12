@@ -1,11 +1,12 @@
-import React, { useState, useRef, useCallback } from 'react';
+
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import Claw from './Claw';
 import Plushie from './Plushie';
 
 interface ClawMachineProps {
   gameState: 'playing' | 'paused' | 'gameOver';
   onStartTimer: () => void;
-  onSuccessfulGrab: () => void;
+  onSuccessfulGrab: (value: number) => void;
   onFailedGrab: () => void;
 }
 
@@ -13,10 +14,12 @@ interface PlushieData {
   id: number;
   x: number;
   y: number;
-  type: string;
-  color: string;
+  type: 'generic' | 'medium' | 'good';
+  imagePath: string;
+  value: number;
   isGrabbed: boolean;
   isFalling: boolean;
+  isDropping: boolean;
 }
 
 const ClawMachine: React.FC<ClawMachineProps> = ({
@@ -28,40 +31,121 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
   const machineRef = useRef<HTMLDivElement>(null);
   const [clawPosition, setClawPosition] = useState({ x: 50, y: 10 });
   const [isClawActive, setIsClawActive] = useState(false);
-  const [nextPlushieId, setNextPlushieId] = useState(6);
-  const [plushies, setPlushies] = useState<PlushieData[]>([
-    { id: 1, x: 20, y: 70, type: '🧸', color: 'brown', isGrabbed: false, isFalling: false },
-    { id: 2, x: 35, y: 75, type: '🐱', color: 'orange', isGrabbed: false, isFalling: false },
-    { id: 3, x: 65, y: 72, type: '🐶', color: 'golden', isGrabbed: false, isFalling: false },
-    { id: 4, x: 80, y: 68, type: '🐰', color: 'white', isGrabbed: false, isFalling: false },
-    { id: 5, x: 50, y: 80, type: '🦊', color: 'red', isGrabbed: false, isFalling: false },
-  ]);
+  const [nextPlushieId, setNextPlushieId] = useState(1);
+  const [plushies, setPlushies] = useState<PlushieData[]>([]);
   const [hasMovedClaw, setHasMovedClaw] = useState(false);
+  const [availableImages, setAvailableImages] = useState<{
+    generic: string[];
+    medium: string[];
+    good: string[];
+  }>({ generic: [], medium: [], good: [] });
 
-  const plushieTypes = ['🧸', '🐱', '🐶', '🐰', '🦊', '🐼', '🐻', '🐸', '🐷', '🐵'];
+  // Load available images from the public folders
+  useEffect(() => {
+    const loadImages = async () => {
+      const genericImages = [
+        '/generic/generic.png',
+        '/generic/generic2.png'
+      ];
+      
+      const mediumImages = [
+        '/medium/blue.png',
+        '/medium/green.png',
+        '/medium/kirby.png',
+        '/medium/pikachu.png',
+        '/medium/purple.png',
+        '/medium/repo.png',
+        '/medium/repoBlue.png',
+        '/medium/white.png'
+      ];
+      
+      const goodImages = [
+        '/good/appa.png',
+        '/good/duck.png',
+        '/good/gaara.png'
+      ];
+
+      setAvailableImages({
+        generic: genericImages,
+        medium: mediumImages,
+        good: goodImages
+      });
+    };
+
+    loadImages();
+  }, []);
+
+  // Initialize plushies when images are loaded
+  useEffect(() => {
+    if (availableImages.generic.length > 0 && plushies.length === 0) {
+      const initialPlushies = generatePlushies(6);
+      setPlushies(initialPlushies);
+      setNextPlushieId(7);
+    }
+  }, [availableImages]);
+
+  const generatePlushieValue = (type: 'generic' | 'medium' | 'good'): number => {
+    switch (type) {
+      case 'generic':
+        return 10;
+      case 'medium':
+        return Math.floor(Math.random() * 31) + 20; // $20-$50
+      case 'good':
+        return 80;
+      default:
+        return 10;
+    }
+  };
+
+  const generatePlushies = (count: number): PlushieData[] => {
+    const newPlushies: PlushieData[] = [];
+    const currentGoodCount = plushies.filter(p => p.type === 'good' && !p.isGrabbed && !p.isFalling).length;
+    
+    for (let i = 0; i < count; i++) {
+      let type: 'generic' | 'medium' | 'good';
+      const hasGoodPlushie = currentGoodCount > 0 || newPlushies.some(p => p.type === 'good');
+      
+      // Weighted selection: 50% generic, 40% medium, 10% good (but max 1 good)
+      const random = Math.random();
+      if (!hasGoodPlushie && random < 0.1) {
+        type = 'good';
+      } else if (random < 0.5) {
+        type = 'generic';
+      } else {
+        type = 'medium';
+      }
+
+      const typeImages = availableImages[type];
+      if (typeImages.length === 0) continue;
+
+      const randomImage = typeImages[Math.floor(Math.random() * typeImages.length)];
+      const randomX = Math.random() * 60 + 20; // Between 20-80%
+      const randomY = Math.random() * 15 + 70; // Between 70-85%
+      
+      newPlushies.push({
+        id: nextPlushieId + i,
+        x: randomX,
+        y: randomY,
+        type,
+        imagePath: randomImage,
+        value: generatePlushieValue(type),
+        isGrabbed: false,
+        isFalling: false,
+        isDropping: false
+      });
+    }
+    
+    return newPlushies;
+  };
 
   const addNewPlushies = () => {
-    const availablePlushies = plushies.filter(p => !p.isGrabbed && !p.isFalling);
-    if (availablePlushies.length <= 2) {
-      const newPlushies: PlushieData[] = [];
-      for (let i = 0; i < 3; i++) {
-        const randomType = plushieTypes[Math.floor(Math.random() * plushieTypes.length)];
-        const randomX = Math.random() * 60 + 20; // Between 20-80%
-        const randomY = Math.random() * 15 + 70; // Between 70-85%
-        
-        newPlushies.push({
-          id: nextPlushieId + i,
-          x: randomX,
-          y: randomY,
-          type: randomType,
-          color: 'mixed',
-          isGrabbed: false,
-          isFalling: false
-        });
-      }
+    const availablePlushies = plushies.filter(p => !p.isGrabbed && !p.isFalling && !p.isDropping);
+    if (availablePlushies.length < 6) {
+      const needed = 6 - availablePlushies.length;
+      const newPlushies = generatePlushies(needed);
       
       setPlushies(prev => [...prev, ...newPlushies]);
-      setNextPlushieId(prev => prev + 3);
+      setNextPlushieId(prev => prev + needed);
     }
   };
 
@@ -87,13 +171,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
     setIsClawActive(true);
     
-    // Step 1: Animate claw going down slowly (4 seconds)
+    // Step 1: Animate claw going down slowly (6 seconds)
     setClawPosition(prev => ({ ...prev, y: 70 }));
     
     setTimeout(() => {
       // Step 2: Check for collision with plushies
       const grabbedPlushie = plushies.find(plushie => {
-        if (plushie.isGrabbed || plushie.isFalling) return false;
+        if (plushie.isGrabbed || plushie.isFalling || plushie.isDropping) return false;
         
         const distance = Math.abs(plushie.x - clawPosition.x);
         return distance < 10; // Collision threshold
@@ -122,7 +206,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             )
           );
           
-          // Step 4: Move claw (with plushie) slowly back up to top (4 seconds)
+          // Step 4: Move claw (with plushie) slowly back up to top (6 seconds)
           setTimeout(() => {
             setClawPosition(prev => ({ ...prev, y: 10 }));
             setPlushies(prev => 
@@ -133,7 +217,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
               )
             );
             
-            // Step 5: Move claw (with plushie) horizontally to prize slot (4 seconds)
+            // Step 5: Move claw (with plushie) horizontally to prize slot (6 seconds)
             setTimeout(() => {
               setClawPosition(prev => ({ ...prev, x: 15 }));
               setPlushies(prev => 
@@ -168,14 +252,14 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                           : p
                       )
                     );
-                  }, 100);
+                  }, 1500);
                   
-                  // Reset claw and fail (2 seconds)
+                  // Reset claw and fail (3 seconds)
                   setTimeout(() => {
                     resetClawPosition();
                     onFailedGrab();
-                  }, 2000);
-                }, 1500);
+                  }, 3000);
+                }, 2000);
               } else {
                 // Step 6: Drop plushie when claw is over prize slot
                 setTimeout(() => {
@@ -184,7 +268,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, isGrabbed: false, isFalling: true }
+                          ? { ...p, isGrabbed: false, isDropping: true }
                           : p
                       )
                     );
@@ -203,10 +287,10 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                       setTimeout(() => {
                         setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
                         resetClawPosition();
-                        onSuccessfulGrab();
+                        onSuccessfulGrab(grabbedPlushie.value);
                         addNewPlushies(); // Add new plushies if needed
                       }, 2000);
-                    }, 100);
+                    }, 500);
                   } else {
                     // If not over prize area, drop back to main area with animation
                     setPlushies(prev => 
@@ -230,28 +314,28 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                       setTimeout(() => {
                         resetClawPosition();
                         onFailedGrab();
-                      }, 2000);
-                    }, 100);
+                      }, 3000);
+                    }, 1500);
                   }
-                }, 1500);
+                }, 2000);
               }
-            }, 4000); // Slower horizontal movement (4 seconds)
-          }, 4000); // Slower vertical movement up (4 seconds)
+            }, 6000); // Slower horizontal movement (6 seconds)
+          }, 6000); // Slower vertical movement up (6 seconds)
           
           return;
         }
       }
       
-      // Failed grab or no plushie - Step 3: Move claw back up (3 seconds)
+      // Failed grab or no plushie - Step 3: Move claw back up (4 seconds)
       setTimeout(() => {
         setClawPosition(prev => ({ ...prev, y: 10 }));
         
         setTimeout(() => {
           resetClawPosition();
           onFailedGrab();
-        }, 3000); // Slower movement back up
-      }, 1500);
-    }, 4000); // Slower movement down (4 seconds)
+        }, 4000); // Slower movement back up
+      }, 2000);
+    }, 6000); // Slower movement down (6 seconds)
   }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab]);
 
   const resetClawPosition = () => {
@@ -291,10 +375,12 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
           <Plushie
             key={plushie.id}
             position={{ x: plushie.x, y: plushie.y }}
+            imagePath={plushie.imagePath}
             type={plushie.type}
-            color={plushie.color}
+            value={plushie.value}
             isGrabbed={plushie.isGrabbed}
             isFalling={plushie.isFalling}
+            isDropping={plushie.isDropping}
           />
         ))}
       </div>

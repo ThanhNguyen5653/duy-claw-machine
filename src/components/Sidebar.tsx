@@ -43,17 +43,17 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, score }) => {
       <div className="text-center">
         <div className="text-3xl font-bold retro-text neon-glow mb-6" 
              style={{ color: 'hsl(var(--neon-green))' }}>
-          🏆 SCORE
+          💰 MONEY
         </div>
         <div className="text-6xl font-bold retro-text neon-glow mb-6" 
              style={{ color: 'hsl(var(--neon-yellow))' }}>
-          {score || 0}
+          ${score || 0}
         </div>
         <div className="text-lg retro-text mb-4" style={{ color: 'hsl(var(--neon-pink))' }}>
           Rank
         </div>
         <div className="px-4 py-2 neon-border bg-gradient-to-r from-orange-600 to-yellow-600 text-xl font-bold retro-text">
-          {(score || 0) < 5 ? 'Rookie' : (score || 0) < 10 ? 'Pro' : 'Master'}
+          {(score || 0) < 50 ? 'Rookie' : (score || 0) < 100 ? 'Pro' : 'Master'}
         </div>
       </div>
     </div>

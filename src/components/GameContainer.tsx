@@ -58,8 +58,8 @@ const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
-  const handleSuccessfulGrab = () => {
-    onAddScore(1);
+  const handleSuccessfulGrab = (value: number) => {
+    onAddScore(value);
     resetTimer();
   };
 
@@ -77,7 +77,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
             GAME OVER
           </h2>
           <div className="text-3xl retro-text mb-8" style={{ color: 'hsl(var(--neon-yellow))' }}>
-            FINAL SCORE: {score}
+            FINAL SCORE: ${score}
           </div>
           <button
             onClick={onReset}
