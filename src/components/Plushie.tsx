@@ -68,19 +68,25 @@ const Plushie: React.FC<PlushieProps> = ({
           </div>
         )}
         
-        {/* Grab Points (dots) - Positioned to align perfectly with claw red dot */}
+        {/* Grab Points (dots) - SCATTERED ON THE PLUSHIE ITSELF */}
         {!isGrabbed && !isFalling && !isDropping && (
           <>
-            {/* Center dot - 100% success (GREEN) - Positioned to match claw red dot level */}
-            <div className="absolute top-[-2px] left-1/2 transform -translate-x-1/2 w-3 h-3 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
+            {/* Center dot - 100% success (GREEN) - Dead center of plushie */}
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-green-500 rounded-full animate-pulse border-2 border-white shadow-lg z-20"></div>
             
-            {/* Side dots - Variable success rate (YELLOW) - Same level as center dot */}
-            <div className="absolute top-[-2px] left-1/4 transform -translate-x-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
-            <div className="absolute top-[-2px] right-1/4 transform translate-x-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            {/* Side dots - Variable success rate (YELLOW) - On the plushie body */}
+            <div className="absolute top-1/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-1/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
             
-            {/* Outer dots - Low success rate (ORANGE) - Same level as other dots */}
-            <div className="absolute top-[-2px] left-1/6 transform -translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
-            <div className="absolute top-[-2px] right-1/6 transform translate-x-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            {/* Bottom side dots - More yellow dots on plushie */}
+            <div className="absolute top-2/3 left-1/3 transform -translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            <div className="absolute top-2/3 right-1/3 transform translate-x-1/2 -translate-y-1/2 w-3 h-3 bg-yellow-500 rounded-full animate-pulse border-2 border-white shadow-md z-20"></div>
+            
+            {/* Outer edge dots - Low success rate (ORANGE) - On plushie edges */}
+            <div className="absolute top-1/4 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-1/4 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-3/4 left-1/6 transform -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
+            <div className="absolute top-3/4 right-1/6 transform translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-orange-500 rounded-full animate-pulse border border-white shadow-sm z-20"></div>
           </>
         )}
       </div>
