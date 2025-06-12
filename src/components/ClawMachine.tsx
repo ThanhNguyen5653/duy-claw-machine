@@ -294,6 +294,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             type={plushie.type}
             color={plushie.color}
             isGrabbed={plushie.isGrabbed}
+            isFalling={plushie.isFalling}
           />
         ))}
       </div>
