@@ -36,16 +36,17 @@ const GameContainer: React.FC<GameContainerProps> = ({
   topPlushies,
   onUpdateTopPlushies
 }) => {
-  const [timeLeft, setTimeLeft] = useState(20);
+  const [timeLeft, setTimeLeft] = useState(30); // Increased to 30 seconds
   const [isTimerActive, setIsTimerActive] = useState(false);
+  const [isTimerPaused, setIsTimerPaused] = useState(false);
   const timerRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
-    if (isTimerActive && gameState === 'playing' && timeLeft > 0) {
+    if (isTimerActive && !isTimerPaused && gameState === 'playing' && timeLeft > 0) {
       timerRef.current = setTimeout(() => {
         setTimeLeft(prev => prev - 1);
       }, 1000);
-    } else if (timeLeft === 0 && isTimerActive) {
+    } else if (timeLeft === 0 && isTimerActive && !isTimerPaused) {
       // Timer expired - lose a turn
       onUseCoin();
       resetTimer();
@@ -56,16 +57,22 @@ const GameContainer: React.FC<GameContainerProps> = ({
         clearTimeout(timerRef.current);
       }
     };
-  }, [timeLeft, isTimerActive, gameState, onUseCoin]);
+  }, [timeLeft, isTimerActive, isTimerPaused, gameState, onUseCoin]);
 
   const startTimer = () => {
     setIsTimerActive(true);
-    setTimeLeft(20);
+    setIsTimerPaused(false);
+    setTimeLeft(30); // Reset to 30 seconds
+  };
+
+  const pauseTimer = () => {
+    setIsTimerPaused(true);
   };
 
   const resetTimer = () => {
     setIsTimerActive(false);
-    setTimeLeft(20);
+    setIsTimerPaused(false);
+    setTimeLeft(30); // Reset to 30 seconds
     if (timerRef.current) {
       clearTimeout(timerRef.current);
     }
@@ -74,12 +81,12 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const handleSuccessfulGrab = (plushie: PlushieData) => {
     onUpdateTopPlushies(plushie);
     onAddCoin(); // Reward player with +1 coin for successful grab
-    resetTimer();
+    // Timer will be reset by the claw machine component
   };
 
   const handleFailedGrab = () => {
     onUseCoin();
-    resetTimer();
+    // Timer will be reset by the claw machine component
   };
 
   if (gameState === 'gameOver') {
@@ -139,14 +146,25 @@ const GameContainer: React.FC<GameContainerProps> = ({
         
         {/* Timer */}
         <div className="mb-4 text-2xl retro-text" 
-             style={{ color: isTimerActive ? 'hsl(var(--neon-yellow))' : 'hsl(var(--muted-foreground))' }}>
+             style={{ 
+               color: isTimerActive && !isTimerPaused 
+                 ? (timeLeft <= 10 ? 'hsl(var(--neon-pink))' : 'hsl(var(--neon-yellow))') 
+                 : 'hsl(var(--muted-foreground))' 
+             }}>
           TIME: {timeLeft}
+          {isTimerPaused && (
+            <span className="ml-2 text-sm" style={{ color: 'hsl(var(--neon-cyan))' }}>
+              (PAUSED)
+            </span>
+          )}
         </div>
 
         {/* Claw Machine */}
         <ClawMachine
           gameState={gameState}
           onStartTimer={startTimer}
+          onPauseTimer={pauseTimer}
+          onResetTimer={resetTimer}
           onSuccessfulGrab={handleSuccessfulGrab}
           onFailedGrab={handleFailedGrab}
         />

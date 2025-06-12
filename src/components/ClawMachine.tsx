@@ -5,6 +5,8 @@ import Plushie from './Plushie';
 interface ClawMachineProps {
   gameState: 'playing' | 'paused' | 'gameOver';
   onStartTimer: () => void;
+  onPauseTimer: () => void;
+  onResetTimer: () => void;
   onSuccessfulGrab: (plushie: PlushieData) => void;
   onFailedGrab: () => void;
 }
@@ -24,11 +26,13 @@ interface PlushieData {
 const ClawMachine: React.FC<ClawMachineProps> = ({
   gameState,
   onStartTimer,
+  onPauseTimer,
+  onResetTimer,
   onSuccessfulGrab,
   onFailedGrab
 }) => {
   const machineRef = useRef<HTMLDivElement>(null);
-  const [clawPosition, setClawPosition] = useState({ x: 50, y: 10 });
+  const [clawPosition, setClawPosition] = useState({ x: 50, y: 15 });
   const [isClawActive, setIsClawActive] = useState(false);
   const [nextPlushieId, setNextPlushieId] = useState(1);
   const [plushies, setPlushies] = useState<PlushieData[]>([]);
@@ -119,7 +123,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
       const randomImage = typeImages[Math.floor(Math.random() * typeImages.length)];
       const randomX = Math.random() * 60 + 20; // Between 20-80%
-      const fixedY = 75; // Fixed Y position for all plushies - same level
+      const fixedY = 70; // Fixed Y position for all plushies - same level, higher up
       
       newPlushies.push({
         id: nextPlushieId + i,
@@ -198,9 +202,10 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     if (gameState !== 'playing' || isClawActive) return;
 
     setIsClawActive(true);
+    onPauseTimer(); // Pause timer during grab sequence
     
-    // Step 1: Animate claw going down to plushie level (2 seconds)
-    setClawPosition(prev => ({ ...prev, y: 75 })); // Match plushie level
+    // Step 1: Animate claw going down to plushie level (1.5 seconds)
+    setClawPosition(prev => ({ ...prev, y: 70 })); // Match plushie level exactly
     
     setTimeout(() => {
       // Step 2: Check for collision with plushies
@@ -219,23 +224,23 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
           setPlushies(prev => 
             prev.map(p => 
               p.id === grabbedPlushie.id 
-                ? { ...p, isGrabbed: true, x: clawPosition.x, y: 75 }
+                ? { ...p, isGrabbed: true, x: clawPosition.x, y: 70 }
                 : p
             )
           );
           
-          // Step 4: Move claw (with plushie) slowly back up to top (2 seconds)
+          // Step 4: Move claw (with plushie) slowly back up to top (1.5 seconds)
           setTimeout(() => {
-            setClawPosition(prev => ({ ...prev, y: 10 }));
+            setClawPosition(prev => ({ ...prev, y: 15 }));
             setPlushies(prev => 
               prev.map(p => 
                 p.id === grabbedPlushie.id 
-                  ? { ...p, y: 10 }
+                  ? { ...p, y: 15 }
                   : p
               )
             );
             
-            // Step 5: Move claw (with plushie) horizontally to prize slot (2 seconds)
+            // Step 5: Move claw (with plushie) horizontally to prize slot (1.5 seconds)
             setTimeout(() => {
               setClawPosition(prev => ({ ...prev, x: 15 }));
               setPlushies(prev => 
@@ -264,18 +269,19 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                     setPlushies(prev => 
                       prev.map(p => 
                         p.id === grabbedPlushie.id 
-                          ? { ...p, y: 75, x: randomX, isFalling: false }
+                          ? { ...p, y: 70, x: randomX, isFalling: false }
                           : p
                       )
                     );
                   }, 1000);
                   
-                  // Reset claw and fail (1.5 seconds)
+                  // Reset claw and fail (1 second)
                   setTimeout(() => {
                     resetClawPosition();
                     onFailedGrab();
-                  }, 1500);
-                }, 1000);
+                    onResetTimer(); // Reset timer for next turn
+                  }, 1000);
+                }, 800);
               } else {
                 // Step 6: Drop plushie when claw is over prize slot
                 setTimeout(() => {
@@ -303,32 +309,34 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
                       setPlushies(prev => prev.filter(p => p.id !== grabbedPlushie.id));
                       resetClawPosition();
                       onSuccessfulGrab(grabbedPlushie);
+                      onResetTimer(); // Reset timer for next turn
                       addNewPlushies(); // Add new plushies if needed
-                    }, 800);
+                    }, 600);
                   }, 200);
-                }, 800);
+                }, 600);
               }
-            }, 2000); // Horizontal movement (2 seconds)
-          }, 2000); // Vertical movement up (2 seconds)
+            }, 1500); // Horizontal movement (1.5 seconds)
+          }, 1500); // Vertical movement up (1.5 seconds)
           
           return;
         }
       }
       
-      // Failed grab or no plushie - Step 3: Move claw back up (1.5 seconds)
+      // Failed grab or no plushie - Step 3: Move claw back up (1 second)
       setTimeout(() => {
-        setClawPosition(prev => ({ ...prev, y: 10 }));
+        setClawPosition(prev => ({ ...prev, y: 15 }));
         
         setTimeout(() => {
           resetClawPosition();
           onFailedGrab();
-        }, 1500); // Movement back up
-      }, 800);
-    }, 2000); // Movement down (2 seconds)
-  }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab]);
+          onResetTimer(); // Reset timer for next turn
+        }, 1000); // Movement back up
+      }, 600);
+    }, 1500); // Movement down (1.5 seconds)
+  }, [gameState, isClawActive, clawPosition.x, plushies, onSuccessfulGrab, onFailedGrab, onPauseTimer, onResetTimer]);
 
   const resetClawPosition = () => {
-    setClawPosition({ x: 50, y: 10 });
+    setClawPosition({ x: 50, y: 15 });
     setIsClawActive(false);
     setHasMovedClaw(false);
   };
