@@ -27,17 +27,17 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         }}
       ></div>
       
-      {/* Claw Body - Made bigger for better alignment */}
-      <div className="relative w-14 h-14">
+      {/* Claw Body */}
+      <div className="relative w-12 h-12">
         {/* Claw Center */}
         <div className="absolute inset-0 bg-gradient-to-b from-gray-300 to-gray-600 rounded-full border-2 border-gray-700 shadow-lg">
-          {/* Claw tip indicator - RED DOT for alignment - Positioned to align with plushie green dots */}
-          <div className="absolute bottom-[-8px] left-1/2 transform -translate-x-1/2 w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
+          {/* Claw tip indicator - RED DOT positioned to align perfectly with plushie green dots */}
+          <div className="absolute bottom-[-6px] left-1/2 transform -translate-x-1/2 w-4 h-4 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse z-30"></div>
         </div>
         
         {/* Left Claw Arm */}
         <div 
-          className={`absolute top-7 -left-3 w-7 h-9 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
+          className={`absolute top-6 -left-2 w-6 h-8 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
             isActive ? 'rotate-12' : 'rotate-45'
           }`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}
@@ -45,7 +45,7 @@ const Claw: React.FC<ClawProps> = ({ position, isActive }) => {
         
         {/* Right Claw Arm */}
         <div 
-          className={`absolute top-7 -right-3 w-7 h-9 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
+          className={`absolute top-6 -right-2 w-6 h-8 bg-gradient-to-b from-gray-300 to-gray-600 transform origin-top transition-transform duration-700 ${
             isActive ? '-rotate-12' : '-rotate-45'
           }`}
           style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 20% 100%)' }}
