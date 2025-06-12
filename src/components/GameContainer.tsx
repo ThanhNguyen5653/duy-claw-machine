@@ -77,9 +77,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
+  // CAPPED COIN SYSTEM - Maximum 6 coins
   const handleSuccessfulGrab = (plushie: PlushieData) => {
     onUpdateTopPlushies(plushie);
-    onAddCoin(); // Refund 1 coin for successful grab
+    // Only add coin if under the cap of 6
+    if (coinsLeft < 6) {
+      onAddCoin(); // Refund 1 coin for successful grab (capped at 6)
+    }
   };
 
   const handleFailedGrab = () => {
@@ -151,7 +155,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
       <div className="flex-1 flex flex-col items-center justify-center">
         <h1 className="text-3xl md:text-4xl lg:text-6xl font-bold mb-4 retro-text neon-glow animate-neon-pulse" 
             style={{ color: 'hsl(var(--neon-cyan))' }}>
-          RETRO CLAW
+          DUY'S CLAW MACHINE
         </h1>
 
         {/* Claw Machine */}

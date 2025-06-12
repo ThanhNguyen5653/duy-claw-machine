@@ -158,7 +158,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     );
   };
 
-  // Generate plushies to maintain 6+ on screen
+  // Generate plushies to maintain 6+ on screen - INCREASED GOOD SPAWN RATE
   const generatePlushies = (count: number): PlushieData[] => {
     const newPlushies: PlushieData[] = [];
     const currentGoodCount = plushies.filter(p => 
@@ -166,18 +166,18 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     ).length;
     
     for (let i = 0; i < count; i++) {
-      // Determine type with weighted distribution
+      // Determine type with weighted distribution - INCREASED GOOD SPAWN RATE
       let type: 'generic' | 'medium' | 'good';
       const random = Math.random();
       
-      // Only allow 1 good plushie at a time
+      // Only allow 1 good plushie at a time, but INCREASED spawn chance from 10% to 25%
       const hasGoodPlushie = currentGoodCount > 0 || newPlushies.some(p => p.type === 'good');
       
-      if (!hasGoodPlushie && random < 0.1) { // 10% chance for good (if none exists)
+      if (!hasGoodPlushie && random < 0.25) { // INCREASED from 0.1 to 0.25 (25% chance for good)
         type = 'good';
-      } else if (random < 0.4) { // 30% chance for medium
+      } else if (random < 0.5) { // 25% chance for medium (adjusted)
         type = 'medium';
-      } else { // 60% chance for generic
+      } else { // 50% chance for generic (adjusted)
         type = 'generic';
       }
 

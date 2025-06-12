@@ -67,8 +67,9 @@ const Index = () => {
     });
   };
 
+  // CAPPED COIN SYSTEM - Maximum 6 coins
   const addCoin = () => {
-    setCoinsLeft(prev => prev + 1);
+    setCoinsLeft(prev => Math.min(prev + 1, 6)); // Cap at 6 coins maximum
   };
 
   if (gameState === 'start') {
