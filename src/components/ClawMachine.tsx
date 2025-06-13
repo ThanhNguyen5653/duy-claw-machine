@@ -53,6 +53,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
   const [nextPlushieId, setNextPlushieId] = useState(1);
   const [plushies, setPlushies] = useState<PlushieData[]>([]);
   const [hasStartedTimer, setHasStartedTimer] = useState(false);
+  const [isLoadingImages, setIsLoadingImages] = useState(true);
   const [availableImages, setAvailableImages] = useState<{
     generic: string[];
     medium: string[];
@@ -134,6 +135,9 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
           ],
           good: ['/good/appa.png', '/good/duck.png', '/good/gaara.png']
         });
+      } finally {
+        // Clear loading state regardless of success or failure
+        setIsLoadingImages(false);
       }
     };
 
@@ -163,7 +167,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.33) { // 33% chance for green
           color = 'green';
-          successRate = 0.85; // 90% success
+          successRate = 0.9; // 90% success
         } else if (random < 0.66) { // 33% chance for orange
           color = 'orange';
           successRate = 0.6; // 60% success
@@ -192,7 +196,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         x: Math.cos(greenAngle) * greenRadius,
         y: 0, // All dots at same Y level (claw level)
         color: 'green',
-        successRate: 0.85 // 85% success
+        successRate: 0.9 // 90% success
       });
       
       // Add 2-4 additional non-green dots
@@ -311,12 +315,12 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
 
   // Initialize plushies when images are loaded
   useEffect(() => {
-    if (availableImages.generic.length > 0 && plushies.length === 0) {
+    if (availableImages.generic.length > 0 && plushies.length === 0 && !isLoadingImages) {
       const initialPlushies = generatePlushies(6);
       setPlushies(initialPlushies);
       setNextPlushieId(7);
     }
-  }, [availableImages]);
+  }, [availableImages, isLoadingImages]);
 
   // Maintain 6+ plushies
   const maintainPlushieCount = () => {
@@ -556,6 +560,23 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   }, [gameState]);
 
+  // Show loading indicator while images are loading
+  if (isLoadingImages) {
+    return (
+      <div className="relative w-full max-w-[800px] h-[500px] machine-frame mx-auto flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-3xl font-bold retro-text neon-glow animate-neon-pulse mb-4" 
+               style={{ color: 'hsl(var(--neon-cyan))' }}>
+            LOADING ASSETS...
+          </div>
+          <div className="text-lg retro-text" style={{ color: 'hsl(var(--neon-yellow))' }}>
+            Please wait while we prepare your plushies
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={machineRef}
@@ -622,7 +643,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
             dots={plushie.dots}
-            showDots={false} // MAKE DOTS VISIBLE FOR TESTING
+            showDots={true} // MAKE DOTS VISIBLE FOR TESTING
           />
         ))}
 
