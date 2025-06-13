@@ -643,7 +643,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
             dots={plushie.dots}
-            showDots={true} // MAKE DOTS VISIBLE FOR TESTING
+            showDots={false} // MAKE DOTS VISIBLE FOR TESTING
           />
         ))}
 

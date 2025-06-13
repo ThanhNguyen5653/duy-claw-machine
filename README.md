@@ -1,7 +1,7 @@
 # Duy's Claw Machine
 
 Play the retro-inspired claw machine game!  
-**Live at:** []()
+**Live at:** [Claw machine](https://duy-claw-machine.vercel.app/)
 
 ---
 
