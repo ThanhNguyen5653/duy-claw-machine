@@ -163,10 +163,10 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.25) {
           color = 'green';
-          successRate = 0.8; // 80% success
+          successRate = 0.9; // 90% success
         } else if (random < 0.5) {
           color = 'orange';
-          successRate = 0.5; // 50% success
+          successRate = 0.6; // 60% success
         } else if (random < 0.75) {
           color = 'yellow';
           successRate = 0.4; // 40% success
@@ -195,7 +195,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         x: Math.cos(greenAngle) * greenRadius,
         y: 0, // All dots at same Y level (claw level)
         color: 'green',
-        successRate: 0.8 // 80% success
+        successRate: 0.9 // 90% success
       });
       
       // Add 2-4 additional non-green dots
@@ -212,7 +212,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.4) {
           color = 'orange';
-          successRate = 0.5; // 50% success
+          successRate = 0.6; // 60% success
         } else if (random < 0.7) {
           color = 'yellow';
           successRate = 0.4; // 40% success
