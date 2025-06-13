@@ -74,12 +74,9 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         'blue', 'green', 'kirby', 'pikachu', 'purple', 'repo', 'repoBlue', 'white',
         'red', 'yellow', 'orange', 'pink', 'black', 'gray', 'brown',
         'appa', 'duck', 'gaara', 'naruto', 'sasuke', 'sakura', 'kakashi',
-        'luffy', 'zoro', 'sanji', 'nami', 'chopper', 'robin', 'franky',
-        'goku', 'vegeta', 'gohan', 'piccolo', 'krillin', 'bulma',
-        'mario', 'luigi', 'peach', 'bowser', 'yoshi', 'toad',
-        'pikachu2', 'charizard', 'blastoise', 'venusaur', 'mewtwo',
-        'sonic', 'tails', 'knuckles', 'shadow', 'amy',
-        'link', 'zelda', 'ganondorf', 'samus', 'kirby2'
+        'mario','bowser', 'yoshi', 'toad', 'toph',
+        'stitch', 'sitt', 'sailorMoon', 'luna', 'hamtaro2',
+        'hamtaro1', 'avatar', 'avatar2', 'cars', 'hamtaro'
       ];
 
       for (const name of commonNames) {
