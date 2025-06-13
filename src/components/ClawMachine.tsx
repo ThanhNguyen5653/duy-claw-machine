@@ -144,7 +144,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadAllImages();
   }, []);
 
-  // Generate dots for a plushie - UPDATED DOT MECHANICS WITH NEW RULES
+  // Generate dots for a plushie - UPDATED DOT MECHANICS WITH NEW SUCCESS RATES
   const generateDots = (type: 'generic' | 'medium' | 'good'): DotData[] => {
     const dots: DotData[] = [];
     
@@ -167,13 +167,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.33) { // 33% chance for green
           color = 'green';
-          successRate = 0.9; // 90% success
+          successRate = 0.7; // 70% success (UPDATED)
         } else if (random < 0.66) { // 33% chance for orange
           color = 'orange';
-          successRate = 0.6; // 60% success
+          successRate = 0.45; // 45% success (UPDATED)
         } else { // 34% chance for yellow
           color = 'yellow';
-          successRate = 0.4; // 40% success
+          successRate = 0.4; // 40% success (UPDATED)
         }
         
         dots.push({
@@ -196,7 +196,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         x: Math.cos(greenAngle) * greenRadius,
         y: 0, // All dots at same Y level (claw level)
         color: 'green',
-        successRate: 0.9 // 90% success
+        successRate: 0.7 // 70% success (UPDATED)
       });
       
       // Add 2-4 additional non-green dots
@@ -213,13 +213,13 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.4) {
           color = 'orange';
-          successRate = 0.6; // 60% success
+          successRate = 0.45; // 45% success (UPDATED)
         } else if (random < 0.7) {
           color = 'yellow';
-          successRate = 0.4; // 40% success
+          successRate = 0.4; // 40% success (UPDATED)
         } else {
           color = 'blue';
-          successRate = 0.3; // 30% success
+          successRate = 0.3; // 30% success (unchanged)
         }
         
         dots.push({
@@ -643,7 +643,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
             dots={plushie.dots}
-            showDots={false} // MAKE DOTS VISIBLE FOR TESTING
+            showDots={false} // DOTS REMAIN INVISIBLE
           />
         ))}
 
