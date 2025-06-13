@@ -29,7 +29,7 @@ interface DotData {
   id: string;
   x: number; // relative to plushie center
   y: number; // relative to plushie center - FIXED TO BE AT CLAW LEVEL
-  color: 'green' | 'orange' | 'yellow';
+  color: 'green' | 'orange' | 'yellow' | 'blue';
   successRate: number;
 }
 
@@ -159,16 +159,28 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       });
     }
 
-    // Add 2-4 additional dots (orange and yellow)
+    // Add 2-4 additional dots (orange, yellow, and blue)
     const additionalDots = Math.floor(Math.random() * 3) + 2; // 2-4 additional
     
     for (let i = 0; i < additionalDots; i++) {
       const angle = (i / additionalDots) * 2 * Math.PI + Math.random() * 0.5; // Add some randomness
       const radius = 10 + Math.random() * 15; // 10-25px from center
       
-      // Updated probabilities: orange 60%, yellow 40%
-      const color = Math.random() < 0.5 ? 'orange' : 'yellow';
-      const successRate = color === 'orange' ? 0.6 : 0.4; // Orange 60%, Yellow 40%
+      // Updated probabilities: orange 40%, yellow 30%, blue 30%
+      const random = Math.random();
+      let color: 'orange' | 'yellow' | 'blue';
+      let successRate: number;
+      
+      if (random < 0.4) {
+        color = 'orange';
+        successRate = 0.6; // 60% success
+      } else if (random < 0.7) {
+        color = 'yellow';
+        successRate = 0.4; // 40% success
+      } else {
+        color = 'blue';
+        successRate = 0.3; // 30% success
+      }
       
       dots.push({
         id: `${color}-${i}`,
@@ -204,7 +216,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     );
   };
 
-  // Generate plushies to maintain 6+ on screen - INCREASED GOOD SPAWN RATE
+  // Generate plushies to maintain 6+ on screen - UPDATED SPAWN RATES
   const generatePlushies = (count: number): PlushieData[] => {
     const newPlushies: PlushieData[] = [];
     const currentGoodCount = plushies.filter(p => 
@@ -212,18 +224,18 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     ).length;
     
     for (let i = 0; i < count; i++) {
-      // Determine type with weighted distribution - INCREASED GOOD SPAWN RATE
+      // Determine type with weighted distribution - UPDATED SPAWN RATES
       let type: 'generic' | 'medium' | 'good';
       const random = Math.random();
       
-      // Only allow 1 good plushie at a time, but INCREASED spawn chance from 10% to 25%
+      // Only allow 1 good plushie at a time, but 25% spawn chance
       const hasGoodPlushie = currentGoodCount > 0 || newPlushies.some(p => p.type === 'good');
       
-      if (!hasGoodPlushie && random < 0.25) { // INCREASED from 0.1 to 0.25 (25% chance for good)
+      if (!hasGoodPlushie && random < 0.25) { // 25% chance for good
         type = 'good';
-      } else if (random < 0.5) { // 25% chance for medium (adjusted)
+      } else if (random < 0.6) { // 35% chance for medium (0.25 + 0.35 = 0.6)
         type = 'medium';
-      } else { // 50% chance for generic (adjusted)
+      } else { // 40% chance for generic (remaining)
         type = 'generic';
       }
 
@@ -295,18 +307,16 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     }
   }, [timeLeft, hasStartedTimer, isClawActive, gameState, clawPosition.x]);
 
-  // Pause/Resume functionality
+  // Pause/Resume functionality - FIXED
   useEffect(() => {
     if (gameState === 'paused') {
-      // Freeze all animations and interactions
-      setIsClawActive(true); // Prevent new actions
-    } else if (gameState === 'playing') {
-      // Only resume if we were actually in a grab sequence
-      if (isClawActive && !hasStartedTimer) {
-        setIsClawActive(false);
-      }
+      // Pause timer and prevent new actions
+      onPauseTimer();
+    } else if (gameState === 'playing' && hasStartedTimer) {
+      // Resume timer if it was active
+      onStartTimer();
     }
-  }, [gameState]);
+  }, [gameState, hasStartedTimer]);
 
   // Mouse movement handler
   const handleMouseMove = useCallback((e: React.MouseEvent) => {

@@ -20,7 +20,6 @@ interface GameContainerProps {
   gameState: 'playing' | 'paused' | 'gameOver';
   coinsLeft: number;
   onPause: () => void;
-  onReset: () => void;
   onRestart: () => void;
   onUseCoin: () => void;
   onAddCoin: () => void;
@@ -32,7 +31,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
   gameState,
   coinsLeft,
   onPause,
-  onReset,
   onRestart,
   onUseCoin,
   onAddCoin,
@@ -42,9 +40,10 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const [timeLeft, setTimeLeft] = useState(30);
   const [isTimerActive, setIsTimerActive] = useState(false);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
-  const [allCollectedPlushies, setAllCollectedPlushies] = useState<PlushieData[]>([]); // NEW STATE FOR ALL COLLECTED
+  const [allCollectedPlushies, setAllCollectedPlushies] = useState<PlushieData[]>([]);
   const timerRef = useRef<NodeJS.Timeout>();
 
+  // Timer logic - FIXED PAUSE FUNCTIONALITY
   useEffect(() => {
     if (isTimerActive && !isTimerPaused && gameState === 'playing' && timeLeft > 0) {
       timerRef.current = setTimeout(() => {
@@ -62,7 +61,9 @@ const GameContainer: React.FC<GameContainerProps> = ({
   const startTimer = () => {
     setIsTimerActive(true);
     setIsTimerPaused(false);
-    setTimeLeft(30);
+    if (timeLeft === 0) {
+      setTimeLeft(30);
+    }
   };
 
   const pauseTimer = () => {
@@ -96,35 +97,14 @@ const GameContainer: React.FC<GameContainerProps> = ({
     onUseCoin(); // Lose 1 coin for failed grab
   };
 
-  // Pause timer when game is paused
-  useEffect(() => {
-    if (gameState === 'paused') {
-      pauseTimer();
-    } else if (gameState === 'playing' && isTimerActive) {
-      setIsTimerPaused(false);
-    }
-  }, [gameState, isTimerActive]);
-
   // Calculate overall total value
   const overallTotal = allCollectedPlushies.reduce((sum, plushie) => sum + plushie.value, 0);
-
-  // Reset collected plushies when game restarts
-  useEffect(() => {
-    if (gameState === 'gameOver') {
-      // Don't reset here, let the restart button handle it
-    }
-  }, [gameState]);
 
   // Handle game restart - reset all collected plushies
   const handleRestart = () => {
     setAllCollectedPlushies([]);
+    resetTimer();
     onRestart();
-  };
-
-  // Handle game reset - reset all collected plushies
-  const handleReset = () => {
-    setAllCollectedPlushies([]);
-    onReset();
   };
 
   if (gameState === 'gameOver') {
@@ -202,7 +182,6 @@ const GameContainer: React.FC<GameContainerProps> = ({
         <GameControls
           gameState={gameState}
           onPause={onPause}
-          onReset={handleReset}
           onRestart={handleRestart}
         />
       </div>

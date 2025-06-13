@@ -1,14 +1,13 @@
 import React from 'react';
-import { Pause, Play, RotateCcw, RefreshCw } from 'lucide-react';
+import { Pause, Play, RefreshCw } from 'lucide-react';
 
 interface GameControlsProps {
   gameState: 'playing' | 'paused' | 'gameOver';
   onPause: () => void;
-  onReset: () => void;
   onRestart: () => void;
 }
 
-const GameControls: React.FC<GameControlsProps> = ({ gameState, onPause, onReset, onRestart }) => {
+const GameControls: React.FC<GameControlsProps> = ({ gameState, onPause, onRestart }) => {
   return (
     <div className="flex gap-4 mt-6">
       <button
@@ -33,15 +32,6 @@ const GameControls: React.FC<GameControlsProps> = ({ gameState, onPause, onReset
           </>
         )}
       </button>
-      
-      <button
-        onClick={onReset}
-        className="px-6 py-3 text-lg font-bold retro-text neon-border bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 transition-all duration-300 transform hover:scale-105"
-        style={{ color: 'hsl(var(--neon-cyan))' }}
-      >
-        <RotateCcw className="inline-block mr-2" size={20} />
-        RESET
-      </button>
 
       <button
         onClick={onRestart}
@@ -49,7 +39,7 @@ const GameControls: React.FC<GameControlsProps> = ({ gameState, onPause, onReset
         style={{ color: 'hsl(var(--neon-cyan))' }}
       >
         <RefreshCw className="inline-block mr-2" size={20} />
-        RESTART
+        NEW GAME
       </button>
     </div>
   );
