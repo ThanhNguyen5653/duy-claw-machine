@@ -145,34 +145,31 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     const dots: DotData[] = [];
     
     // UPDATED RULES:
-    // - Generic: Can have multiple green dots (same as other dots)
+    // - Generic: Can have multiple green dots, NO BLUE DOTS, increased orange/yellow/green chances
     // - Medium & Good: Exactly 1 green dot each (at least and at most 1)
     
     if (type === 'generic') {
-      // Generic plushies: Green dots generated like any other dot (can have multiple)
+      // Generic plushies: NO BLUE DOTS, only green, orange, yellow
       const totalDots = Math.floor(Math.random() * 3) + 3; // 3-5 dots total
       
       for (let i = 0; i < totalDots; i++) {
         const angle = (i / totalDots) * 2 * Math.PI + Math.random() * 0.5;
         const radius = 5 + Math.random() * 20; // 5-25px from center
         
-        // Equal probability for all colors including green
+        // NO BLUE DOTS - Only green, orange, yellow with increased probabilities
         const random = Math.random();
-        let color: 'green' | 'orange' | 'yellow' | 'blue';
+        let color: 'green' | 'orange' | 'yellow';
         let successRate: number;
         
-        if (random < 0.25) {
+        if (random < 0.33) { // 33% chance for green
           color = 'green';
           successRate = 0.9; // 90% success
-        } else if (random < 0.5) {
+        } else if (random < 0.66) { // 33% chance for orange
           color = 'orange';
           successRate = 0.6; // 60% success
-        } else if (random < 0.75) {
+        } else { // 34% chance for yellow
           color = 'yellow';
           successRate = 0.4; // 40% success
-        } else {
-          color = 'blue';
-          successRate = 0.3; // 30% success
         }
         
         dots.push({
