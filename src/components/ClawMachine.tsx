@@ -163,7 +163,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         
         if (random < 0.33) { // 33% chance for green
           color = 'green';
-          successRate = 0.9; // 90% success
+          successRate = 0.85; // 90% success
         } else if (random < 0.66) { // 33% chance for orange
           color = 'orange';
           successRate = 0.6; // 60% success
@@ -192,7 +192,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         x: Math.cos(greenAngle) * greenRadius,
         y: 0, // All dots at same Y level (claw level)
         color: 'green',
-        successRate: 0.9 // 90% success
+        successRate: 0.85 // 85% success
       });
       
       // Add 2-4 additional non-green dots
@@ -380,7 +380,6 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       if (plushie.isGrabbed || plushie.isFalling || plushie.isDropping) continue;
       
       for (const dot of plushie.dots) {
-        // Since all dots are now at Y=0 (same level as claw), we only check X distance
         const dotWorldX = plushie.x + (dot.x / 4); // Scale dot position
         const distance = Math.abs(dotWorldX - clawX);
         
