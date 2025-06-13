@@ -1,73 +1,38 @@
-# Welcome to your Lovable project
+# Duy's Claw Machine
 
-## Project info
+Play the retro-inspired claw machine game!  
+**Live at:** []()
 
-**URL**: https://lovable.dev/projects/3fd90549-3fd6-4bec-82fb-6d4c131c67c2
+---
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- Neon retro arcade design
+- Realistic claw movement and plushie physics
+- Multiple plushie types: generic, medium, and rare "good" plushies
+- Each plushie has different grab difficulty and value
+- Top 3 prizes and total score tracking
+- Turns system: win plushies to earn more turns
 
-**Use Lovable**
+---
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3fd90549-3fd6-4bec-82fb-6d4c131c67c2) and start prompting.
+## How to Play
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Start the game** and you get 3 turns.
+2. **Move the claw** left/right by moving your mouse.
+3. **Click** to drop the claw and try to grab a plushie.
+4. **Win a plushie** to earn a turn back (max 3 turns).
+5. **Game ends** when you run out of turns.
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Scoring
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- **Generic plushies:** $10 each
+- **Medium plushies:** $20–$40 each
+- **Good plushies:** $80–$100 each
+- Your **top 3 prizes** and **overall total** are displayed at the end.
 
-Follow these steps:
+---
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/3fd90549-3fd6-4bec-82fb-6d4c131c67c2) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Enjoy and try to get the highest score!
