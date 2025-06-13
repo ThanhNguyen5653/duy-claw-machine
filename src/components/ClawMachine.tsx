@@ -140,11 +140,11 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadAllImages();
   }, []);
 
-  // Generate dots for a plushie - FIXED Y POSITIONING
+  // Generate dots for a plushie - UPDATED DOT MECHANICS
   const generateDots = (type: 'generic' | 'medium' | 'good'): DotData[] => {
     const dots: DotData[] = [];
     
-    // Good category plushies have NO green dots
+    // Good category plushies have NO green dots, others have exactly 1 green dot
     if (type !== 'good') {
       // Always exactly 1 green dot (not necessarily center) for non-good plushies
       const greenAngle = Math.random() * 2 * Math.PI;
@@ -155,7 +155,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
         x: Math.cos(greenAngle) * greenRadius,
         y: 0, // FIXED: All dots at same Y level (claw level)
         color: 'green',
-        successRate: 1.0 // 100% success
+        successRate: 0.8 // 80% success (updated from 100%)
       });
     }
 
@@ -173,7 +173,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
       
       if (random < 0.4) {
         color = 'orange';
-        successRate = 0.6; // 60% success
+        successRate = 0.5; // 50% success (updated from 60%)
       } else if (random < 0.7) {
         color = 'yellow';
         successRate = 0.4; // 40% success

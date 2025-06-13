@@ -79,7 +79,7 @@ const GameContainer: React.FC<GameContainerProps> = ({
     }
   };
 
-  // CAPPED COIN SYSTEM - Maximum 6 coins
+  // NEW COIN SYSTEM: Use coin at start of turn, get coin back on successful grab
   const handleSuccessfulGrab = (plushie: PlushieData) => {
     // Add to all collected plushies for overall total calculation
     setAllCollectedPlushies(prev => [...prev, plushie]);
@@ -87,14 +87,13 @@ const GameContainer: React.FC<GameContainerProps> = ({
     // Update top 3 display
     onUpdateTopPlushies(plushie);
     
-    // Only add coin if under the cap of 6
-    if (coinsLeft < 6) {
-      onAddCoin(); // Refund 1 coin for successful grab (capped at 6)
-    }
+    // Return 1 coin for successful grab (but never exceed 3 coins)
+    onAddCoin();
   };
 
   const handleFailedGrab = () => {
-    onUseCoin(); // Lose 1 coin for failed grab
+    // Coin was already used at start of turn, no additional penalty
+    onUseCoin();
   };
 
   // Calculate overall total value

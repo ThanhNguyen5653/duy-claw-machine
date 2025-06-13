@@ -35,13 +35,6 @@ const Index = () => {
     setGameState('gameOver');
   };
 
-  const resetGame = () => {
-    // Reset to current game state but clear progress
-    setCoinsLeft(3);
-    setTopPlushies([]);
-    setGameState('playing');
-  };
-
   const restartGame = () => {
     // Go back to start screen
     setGameState('start');
@@ -57,6 +50,7 @@ const Index = () => {
     });
   };
 
+  // NEW COIN SYSTEM: Lose coin at start of turn, get coin back on successful grab
   const useCoin = () => {
     setCoinsLeft(prev => {
       const newCoins = prev - 1;
@@ -67,9 +61,9 @@ const Index = () => {
     });
   };
 
-  // CAPPED COIN SYSTEM - Maximum 6 coins
+  // Add coin back on successful grab (max 3 coins)
   const addCoin = () => {
-    setCoinsLeft(prev => Math.min(prev + 1, 6)); // Cap at 6 coins maximum
+    setCoinsLeft(prev => Math.min(prev + 1, 3)); // Cap at 3 coins maximum
   };
 
   if (gameState === 'start') {
@@ -82,7 +76,6 @@ const Index = () => {
         gameState={gameState}
         coinsLeft={coinsLeft}
         onPause={pauseGame}
-        onReset={resetGame}
         onRestart={restartGame}
         onUseCoin={useCoin}
         onAddCoin={addCoin}

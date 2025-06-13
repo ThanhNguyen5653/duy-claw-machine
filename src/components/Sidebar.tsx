@@ -16,7 +16,7 @@ interface SidebarProps {
   side: 'left' | 'right';
   coinsLeft?: number;
   topPlushies?: PlushieData[];
-  totalValue?: number; // NEW PROP FOR OVERALL TOTAL
+  totalValue?: number;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [], totalValue = 0 }) => {
@@ -26,10 +26,10 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [], to
         <div className="text-center">
           <div className="text-2xl font-bold retro-text neon-glow mb-4" 
                style={{ color: 'hsl(var(--neon-yellow))' }}>
-            🪙 COINS
+            🪙 TURNS LEFT
           </div>
           
-          {/* Base 3 coins */}
+          {/* Show exactly 3 coin slots, filled based on coinsLeft */}
           <div className="flex justify-center items-center gap-2 mb-4">
             {[1, 2, 3].map((coin) => (
               <div
@@ -45,34 +45,12 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [], to
             ))}
           </div>
           
-          {/* Extra coins if more than 3 - CAPPED AT 3 BONUS COINS */}
-          {(coinsLeft || 0) > 3 && (
-            <div className="mb-4">
-              <div className="text-sm retro-text mb-2" style={{ color: 'hsl(var(--neon-green))' }}>
-                BONUS COINS
-              </div>
-              <div className="flex justify-center flex-wrap gap-1">
-                {Array.from({ length: Math.min((coinsLeft || 0) - 3, 3) }, (_, i) => (
-                  <div
-                    key={`extra-${i}`}
-                    className="w-8 h-8 rounded-full bg-gold-400 border-2 border-gold-600 flex items-center justify-center text-xs"
-                    style={{ backgroundColor: '#ffd700', borderColor: '#b8860b' }}
-                  >
-                    🪙
-                  </div>
-                ))}
-              </div>
-              {/* Show overflow indicator if more than 6 total coins */}
-              {(coinsLeft || 0) > 6 && (
-                <div className="text-xs retro-text mt-1" style={{ color: 'hsl(var(--neon-pink))' }}>
-                  +{(coinsLeft || 0) - 6} more
-                </div>
-              )}
-            </div>
-          )}
-          
           <div className="text-lg retro-text" style={{ color: 'hsl(var(--neon-cyan))' }}>
-            Total: {coinsLeft || 0}
+            Turns: {coinsLeft || 0}/3
+          </div>
+          
+          <div className="text-sm retro-text mt-2" style={{ color: 'hsl(var(--neon-green))' }}>
+            Win plushies to get turns back!
           </div>
         </div>
       </div>
@@ -124,7 +102,7 @@ const Sidebar: React.FC<SidebarProps> = ({ side, coinsLeft, topPlushies = [], to
           })}
         </div>
         
-        {/* UPDATED: Show overall total instead of just top 3 */}
+        {/* Show overall total */}
         {totalValue > 0 && (
           <div className="mt-4 text-lg retro-text" style={{ color: 'hsl(var(--neon-pink))' }}>
             Overall Total: ${totalValue}
