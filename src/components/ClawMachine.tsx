@@ -140,55 +140,95 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
     loadAllImages();
   }, []);
 
-  // Generate dots for a plushie - UPDATED DOT MECHANICS
+  // Generate dots for a plushie - UPDATED DOT MECHANICS WITH NEW RULES
   const generateDots = (type: 'generic' | 'medium' | 'good'): DotData[] => {
     const dots: DotData[] = [];
     
-    // Good category plushies have NO green dots, others have exactly 1 green dot
-    if (type !== 'good') {
-      // Always exactly 1 green dot (not necessarily center) for non-good plushies
+    // UPDATED RULES:
+    // - Generic: Can have multiple green dots (same as other dots)
+    // - Medium & Good: Exactly 1 green dot each (at least and at most 1)
+    
+    if (type === 'generic') {
+      // Generic plushies: Green dots generated like any other dot (can have multiple)
+      const totalDots = Math.floor(Math.random() * 3) + 3; // 3-5 dots total
+      
+      for (let i = 0; i < totalDots; i++) {
+        const angle = (i / totalDots) * 2 * Math.PI + Math.random() * 0.5;
+        const radius = 5 + Math.random() * 20; // 5-25px from center
+        
+        // Equal probability for all colors including green
+        const random = Math.random();
+        let color: 'green' | 'orange' | 'yellow' | 'blue';
+        let successRate: number;
+        
+        if (random < 0.25) {
+          color = 'green';
+          successRate = 0.8; // 80% success
+        } else if (random < 0.5) {
+          color = 'orange';
+          successRate = 0.5; // 50% success
+        } else if (random < 0.75) {
+          color = 'yellow';
+          successRate = 0.4; // 40% success
+        } else {
+          color = 'blue';
+          successRate = 0.3; // 30% success
+        }
+        
+        dots.push({
+          id: `${color}-${i}`,
+          x: Math.cos(angle) * radius,
+          y: 0, // All dots at same Y level (claw level)
+          color,
+          successRate
+        });
+      }
+    } else {
+      // Medium and Good plushies: Exactly 1 green dot + 2-4 other dots
+      
+      // Always add exactly 1 green dot
       const greenAngle = Math.random() * 2 * Math.PI;
-      const greenRadius = 5 + Math.random() * 10; // 5-15px from center
+      const greenRadius = 5 + Math.random() * 15; // 5-20px from center
       
       dots.push({
         id: 'green-1',
         x: Math.cos(greenAngle) * greenRadius,
-        y: 0, // FIXED: All dots at same Y level (claw level)
+        y: 0, // All dots at same Y level (claw level)
         color: 'green',
-        successRate: 0.8 // 80% success (updated from 100%)
+        successRate: 0.8 // 80% success
       });
-    }
-
-    // Add 2-4 additional dots (orange, yellow, and blue)
-    const additionalDots = Math.floor(Math.random() * 3) + 2; // 2-4 additional
-    
-    for (let i = 0; i < additionalDots; i++) {
-      const angle = (i / additionalDots) * 2 * Math.PI + Math.random() * 0.5; // Add some randomness
-      const radius = 10 + Math.random() * 15; // 10-25px from center
       
-      // Updated probabilities: orange 40%, yellow 30%, blue 30%
-      const random = Math.random();
-      let color: 'orange' | 'yellow' | 'blue';
-      let successRate: number;
+      // Add 2-4 additional non-green dots
+      const additionalDots = Math.floor(Math.random() * 3) + 2; // 2-4 additional
       
-      if (random < 0.4) {
-        color = 'orange';
-        successRate = 0.5; // 50% success (updated from 60%)
-      } else if (random < 0.7) {
-        color = 'yellow';
-        successRate = 0.4; // 40% success
-      } else {
-        color = 'blue';
-        successRate = 0.3; // 30% success
+      for (let i = 0; i < additionalDots; i++) {
+        const angle = (i / additionalDots) * 2 * Math.PI + Math.random() * 0.5;
+        const radius = 10 + Math.random() * 15; // 10-25px from center
+        
+        // Only orange, yellow, and blue for additional dots
+        const random = Math.random();
+        let color: 'orange' | 'yellow' | 'blue';
+        let successRate: number;
+        
+        if (random < 0.4) {
+          color = 'orange';
+          successRate = 0.5; // 50% success
+        } else if (random < 0.7) {
+          color = 'yellow';
+          successRate = 0.4; // 40% success
+        } else {
+          color = 'blue';
+          successRate = 0.3; // 30% success
+        }
+        
+        dots.push({
+          id: `${color}-${i}`,
+          x: Math.cos(angle) * radius,
+          y: 0, // All dots at same Y level (claw level)
+          color,
+          successRate
+        });
       }
-      
-      dots.push({
-        id: `${color}-${i}`,
-        x: Math.cos(angle) * radius,
-        y: 0, // FIXED: All dots at same Y level (claw level)
-        color,
-        successRate
-      });
     }
 
     return dots;
@@ -586,7 +626,7 @@ const ClawMachine: React.FC<ClawMachineProps> = ({
             isFalling={plushie.isFalling}
             isDropping={plushie.isDropping}
             dots={plushie.dots}
-            showDots={false} // MAKE DOTS INVISIBLE
+            showDots={true} // MAKE DOTS VISIBLE FOR TESTING
           />
         ))}
 
